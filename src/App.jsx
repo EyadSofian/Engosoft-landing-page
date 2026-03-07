@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 const WHATSAPP_NUMBER = "201007725744";
 const WEB3FORMS_KEY = "37492e85-55bb-4594-8018-2647115be762";
-const GOOGLE_MEET_LINK = "https://calendar.app.google/YOUR_LINK"; // Replace with your actual Google Calendar Appointments link
+const GOOGLE_MEET_LINK = "https://calendar.app.google/35V4etCwYoD5poM77"; // Replace with your actual Google Calendar Appointments link
 
 const workflowDetails = {
   ar: [
