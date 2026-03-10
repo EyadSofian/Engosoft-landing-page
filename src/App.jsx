@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import NeedsAssessment from "./NeedsAssessment.jsx";
 const WHATSAPP_NUMBER = "201007725744";
 const WEB3FORMS_KEY = "37492e85-55bb-4594-8018-2647115be762";
 const GOOGLE_MEET_LINK = "https://calendar.app.google/35V4etCwYoD5poM77"; // Replace with your actual Google Calendar Appointments link
@@ -338,6 +338,13 @@ export default function App() {
       setFormStatus(d.success ? "success" : "error");
     } catch { setFormStatus("error"); }
   };
+  if (currentPage === "assessment") {
+    return (
+      <div dir={isRTL ? "rtl" : "ltr"} style={{ fontFamily: ff }}>
+        <NeedsAssessment lang={lang} onBack={() => setCurrentPage("home")} />
+      </div>
+    );
+  }
 
   if (currentPage !== "home") {
     const wf = workflowDetails[lang].find(w => w.id === currentPage);
