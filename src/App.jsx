@@ -399,7 +399,7 @@ export default function App() {
           <h1 className="af af1 ht" style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.15, marginBottom: 24 }}>{t.hero.title1}<br /><span className="gt">{t.hero.title2}</span><br />{t.hero.title3}</h1>
           <p className="af af2" style={{ fontSize: 19, color: "#555", maxWidth: 620, margin: "0 auto 40px", lineHeight: 1.8 }}>{t.hero.subtitle}</p>
           <div className="af af3 hb" style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 60 }}>
-            <button className="bp" onClick={() => go("contact")} style={{ fontFamily: ff }}>{t.hero.cta1} →</button>
+            <button className="bp" onClick={() => setCurrentPage("assessment")} style={{ fontFamily: ff }}>{t.hero.cta1} →</button>
             <button className="bs" onClick={() => go("services")} style={{ fontFamily: ff }}>{t.hero.cta2}</button>
           </div>
           <div className="af af4 hs" style={{ display: "flex", justifyContent: "center", gap: 48 }}>
