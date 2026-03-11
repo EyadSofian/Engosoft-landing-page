@@ -1,8 +1,325 @@
 import { useState, useEffect } from "react";
-import NeedsAssessment from "./NeedsAssessment.jsx";
+
 const WHATSAPP_NUMBER = "201007725744";
 const WEB3FORMS_KEY = "37492e85-55bb-4594-8018-2647115be762";
-const GOOGLE_MEET_LINK = "https://calendar.app.google/35V4etCwYoD5poM77"; // Replace with your actual Google Calendar Appointments link
+const GOOGLE_MEET_LINK = "https://calendar.app.google/35V4etCwYoD5poM77";
+
+// ─── NEEDS ASSESSMENT ────────────────────────────────────────────────────────
+
+const STEPS = [
+  {
+    id: "industry",
+    titleAr: "في أي مجال شركتك؟",
+    titleEn: "What industry is your company in?",
+    type: "select",
+    options: [
+      { value: "tourism", ar: "سياحة وفنادق", en: "Tourism & Hotels" },
+      { value: "ecommerce", ar: "تجارة إلكترونية", en: "E-Commerce" },
+      { value: "realestate", ar: "عقارات", en: "Real Estate" },
+      { value: "healthcare", ar: "رعاية صحية / صيدلة", en: "Healthcare / Pharma" },
+      { value: "education", ar: "تعليم وتدريب", en: "Education & Training" },
+      { value: "food", ar: "مطاعم وأغذية", en: "Food & Restaurants" },
+      { value: "services", ar: "خدمات مهنية", en: "Professional Services" },
+      { value: "retail", ar: "تجارة تجزئة", en: "Retail" },
+      { value: "tech", ar: "تقنية وبرمجيات", en: "Tech & Software" },
+      { value: "other", ar: "مجال آخر", en: "Other" },
+    ],
+  },
+  {
+    id: "need",
+    titleAr: "إيه أكتر حاجة محتاجها دلوقتي؟",
+    titleEn: "What do you need most right now?",
+    subtitleAr: "اختر كل اللي ينطبق عليك",
+    subtitleEn: "Select all that apply",
+    type: "multi",
+    options: [
+      { value: "chatbot", ar: "شات بوت / بوت واتساب لخدمة العملاء", en: "Chatbot / WhatsApp bot for customer service" },
+      { value: "automation", ar: "أتمتة عمليات (ربط أنظمة، إشعارات، تقارير)", en: "Process automation (system integration, alerts, reports)" },
+      { value: "crm", ar: "نظام إدارة عملاء (CRM / ERP)", en: "CRM / ERP system" },
+      { value: "calls", ar: "تقييم جودة مكالمات بالذكاء الاصطناعي", en: "AI call quality monitoring" },
+      { value: "hr", ar: "فحص وتصنيف سير ذاتية أوتوماتيكي", en: "Automated CV screening & ranking" },
+      { value: "social", ar: "أتمتة السوشيال ميديا", en: "Social media automation" },
+      { value: "website", ar: "إنشاء موقع أو لاندينج بيدج", en: "Website or landing page" },
+      { value: "notsure", ar: "مش متأكد — محتاج استشارة", en: "Not sure — need consultation" },
+    ],
+  },
+  {
+    id: "size",
+    titleAr: "كام شخص في فريقك / شركتك؟",
+    titleEn: "How many people are in your team / company?",
+    type: "select",
+    options: [
+      { value: "solo", ar: "شخص واحد (فريلانسر / startup)", en: "Just me (freelancer / startup)" },
+      { value: "small", ar: "2 – 10 أشخاص", en: "2 – 10 people" },
+      { value: "medium", ar: "11 – 50 شخص", en: "11 – 50 people" },
+      { value: "large", ar: "51 – 200 شخص", en: "51 – 200 people" },
+      { value: "enterprise", ar: "أكثر من 200 شخص", en: "200+ people" },
+    ],
+  },
+  {
+    id: "tools",
+    titleAr: "بتستخدم أي أنظمة أو أدوات حالياً؟",
+    titleEn: "What tools or systems do you currently use?",
+    subtitleAr: "اختر كل اللي بتستخدمه",
+    subtitleEn: "Select all that you use",
+    type: "multi",
+    options: [
+      { value: "whatsapp_business", ar: "واتساب بيزنس", en: "WhatsApp Business" },
+      { value: "excel", ar: "Excel / Google Sheets", en: "Excel / Google Sheets" },
+      { value: "odoo", ar: "Odoo", en: "Odoo" },
+      { value: "shopify", ar: "Shopify / WooCommerce / Salla", en: "Shopify / WooCommerce / Salla" },
+      { value: "crm_tool", ar: "HubSpot / Zoho / Salesforce", en: "HubSpot / Zoho / Salesforce" },
+      { value: "social_tools", ar: "Meta Business / Hootsuite", en: "Meta Business / Hootsuite" },
+      { value: "pbx", ar: "سنترال (Yeastar / Grandstream / أخرى)", en: "PBX (Yeastar / Grandstream / Other)" },
+      { value: "nothing", ar: "لا أستخدم أي أدوات حالياً", en: "I don't use any tools currently" },
+    ],
+  },
+  {
+    id: "pain",
+    titleAr: "إيه أكبر مشكلة بتواجهك دلوقتي؟",
+    titleEn: "What's your biggest challenge right now?",
+    type: "select",
+    options: [
+      { value: "time", ar: "الموظفين بيضيعوا وقت كتير في شغل يدوي متكرر", en: "Staff waste too much time on repetitive manual work" },
+      { value: "customers", ar: "العملاء بيشتكوا من بطء الرد أو عدم الرد", en: "Customers complain about slow or no responses" },
+      { value: "data", ar: "مفيش بيانات واضحة عن أداء الفريق أو المبيعات", en: "No clear data on team performance or sales" },
+      { value: "growth", ar: "الشركة بتكبر وعايز أنظم العمليات قبل ما تتعقد", en: "Company is growing and I need to organize before it gets complex" },
+      { value: "cost", ar: "تكلفة الموظفين عالية وعايز أقلل المصاريف", en: "Staff costs are high and I want to reduce expenses" },
+      { value: "competition", ar: "المنافسين بيستخدموا تكنولوجيا وأنا لسه", en: "Competitors are using tech and I'm falling behind" },
+    ],
+  },
+  {
+    id: "budget",
+    titleAr: "ميزانيتك التقريبية؟",
+    titleEn: "What's your approximate budget?",
+    subtitleAr: "ده بيساعدنا نقترح الحل الأنسب ليك",
+    subtitleEn: "This helps us suggest the most suitable solution",
+    type: "select",
+    options: [
+      { value: "under500", ar: "أقل من $500 (25,000 ج.م)", en: "Under $500" },
+      { value: "500_1500", ar: "$500 – $1,500 (25K – 75K ج.م)", en: "$500 – $1,500" },
+      { value: "1500_5000", ar: "$1,500 – $5,000 (75K – 250K ج.م)", en: "$1,500 – $5,000" },
+      { value: "5000_plus", ar: "أكثر من $5,000 (250K+ ج.م)", en: "$5,000+" },
+      { value: "discuss", ar: "نتفق بعد ما أفهم الحل", en: "Let's discuss after I understand the solution" },
+    ],
+  },
+  {
+    id: "timeline",
+    titleAr: "امتى محتاج النظام يشتغل؟",
+    titleEn: "When do you need the system running?",
+    type: "select",
+    options: [
+      { value: "asap", ar: "في أقرب وقت (أسبوع – أسبوعين)", en: "ASAP (1–2 weeks)" },
+      { value: "month", ar: "خلال شهر", en: "Within a month" },
+      { value: "quarter", ar: "خلال 3 شهور", en: "Within 3 months" },
+      { value: "exploring", ar: "بستكشف الخيارات — مفيش استعجال", en: "Exploring options — no rush" },
+    ],
+  },
+  {
+    id: "contact",
+    titleAr: "ممتاز! أخيراً، ازاي نتواصل معاك؟",
+    titleEn: "Great! Finally, how can we reach you?",
+    type: "contact",
+  },
+];
+
+function NeedsAssessment({ lang: propLang, onBack }) {
+  const [lang, setLang] = useState(propLang || "ar");
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [contact, setContact] = useState({ name: "", phone: "", email: "", company: "", website: "", notes: "" });
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState(false);
+  const isRTL = lang === "ar";
+  const ff = isRTL ? "'Tajawal', sans-serif" : "'Plus Jakarta Sans', sans-serif";
+  const current = STEPS[step];
+  const progress = ((step + 1) / STEPS.length) * 100;
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => { if (propLang) setLang(propLang); }, [propLang]);
+
+  const select = (val) => {
+    if (current.type === "multi") {
+      const prev = answers[current.id] || [];
+      setAnswers({ ...answers, [current.id]: prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val] });
+    } else {
+      setAnswers({ ...answers, [current.id]: val });
+      if (step < STEPS.length - 1) setTimeout(() => setStep(step + 1), 250);
+    }
+  };
+
+  const canNext = () => {
+    if (current.type === "multi") return (answers[current.id] || []).length > 0;
+    if (current.type === "contact") return contact.name && (contact.phone || contact.email);
+    return !!answers[current.id];
+  };
+
+  const submit = async () => {
+    if (!canNext()) return;
+    setSending(true);
+    const labels = {};
+    STEPS.forEach(s => {
+      if (s.type === "contact") return;
+      const val = answers[s.id];
+      if (!val) return;
+      if (Array.isArray(val)) {
+        labels[s.titleEn] = val.map(v => { const o = s.options.find(x => x.value === v); return o ? o.en : v; }).join(" | ");
+      } else {
+        const o = s.options.find(x => x.value === val);
+        labels[s.titleEn] = o ? o.en : val;
+      }
+    });
+    try {
+      await fetch("https://api.web3forms.com/submit", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `Engosoft — New Client Assessment: ${contact.name}`,
+          from_name: "Engosoft Needs Assessment",
+          "Client Name": contact.name, "Phone": contact.phone || "—",
+          "Email": contact.email || "—", "Company": contact.company || "—",
+          "Website": contact.website || "—", "Notes": contact.notes || "—",
+          ...labels,
+        }),
+      });
+    } catch {}
+    setDone(true);
+    setSending(false);
+  };
+
+  if (done) {
+    return (
+      <div dir={isRTL ? "rtl" : "ltr"} style={{ fontFamily: ff, minHeight: "100vh", background: "linear-gradient(180deg, #F0F4FF, #FAFAFA)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ background: "#fff", borderRadius: 24, padding: 48, maxWidth: 500, width: "100%", textAlign: "center", boxShadow: "0 8px 40px rgba(0,20,60,0.06)" }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#F0FFF4", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", border: "3px solid #C6F6D5" }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#276749" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: "#0A2463", marginBottom: 10 }}>{isRTL ? "شكراً لك!" : "Thank you!"}</h2>
+          <p style={{ fontSize: 15, color: "#666", marginBottom: 24, lineHeight: 1.8 }}>
+            {isRTL ? "استلمنا إجاباتك وهنتواصل معاك خلال 24 ساعة بعرض مخصص ليك." : "We received your answers and will contact you within 24 hours with a custom proposal."}
+          </p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(isRTL ? "مرحباً، ملأت استبيان الاحتياجات وعايز أتكلم معاكم" : "Hi, I filled the needs assessment and want to discuss")}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#25D366", color: "#fff", padding: "12px 24px", borderRadius: 12, textDecoration: "none", fontWeight: 700, fontSize: 14, fontFamily: ff }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              {isRTL ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
+            </a>
+            {onBack && <button onClick={onBack} style={{ padding: "12px 24px", borderRadius: 12, border: "2px solid #E2E8F0", background: "#fff", color: "#0A2463", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: ff }}>{isRTL ? "العودة للموقع" : "Back to site"}</button>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div dir={isRTL ? "rtl" : "ltr"} style={{ fontFamily: ff, minHeight: "100vh", background: "linear-gradient(180deg, #F0F4FF, #FAFAFA)", display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {onBack && <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#0A2463", fontFamily: ff }}>{isRTL ? "العودة" : "Back"}</button>}
+          <div style={{ width: 1, height: 20, background: "#E2E8F0" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 7, background: "linear-gradient(135deg, #0A2463, #1E5AA8)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 10 }}>ES</div>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#0A2463" }}>Engosoft</span>
+          </div>
+        </div>
+        <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ padding: "5px 12px", borderRadius: 7, border: "2px solid #E2E8F0", background: "#fff", color: "#0A2463", fontWeight: 700, cursor: "pointer", fontFamily: ff, fontSize: 12 }}>{lang === "ar" ? "EN" : "عربي"}</button>
+      </div>
+
+      <div style={{ padding: "0 24px 12px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontSize: 12, color: "#888" }}>{isRTL ? `سؤال ${step + 1} من ${STEPS.length}` : `Question ${step + 1} of ${STEPS.length}`}</span>
+          <span style={{ fontSize: 12, color: "#0A2463", fontWeight: 700 }}>{Math.round(progress)}%</span>
+        </div>
+        <div style={{ height: 5, background: "#E2E8F0", borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg, #0A2463, #1E5AA8)", borderRadius: 10, transition: "width 0.4s ease" }} />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 24px" }}>
+        <div style={{ maxWidth: 560, width: "100%" }}>
+          <h2 style={{ fontSize: 21, fontWeight: 900, color: "#0A2463", marginBottom: 6, lineHeight: 1.5 }}>
+            {isRTL ? current.titleAr : current.titleEn}
+          </h2>
+          {(current.subtitleAr || current.subtitleEn) && (
+            <p style={{ fontSize: 13, color: "#888", marginBottom: 14 }}>{isRTL ? current.subtitleAr : current.subtitleEn}</p>
+          )}
+
+          {current.type !== "contact" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 14 }}>
+              {current.options.map(opt => {
+                const isSel = current.type === "multi" ? (answers[current.id] || []).includes(opt.value) : answers[current.id] === opt.value;
+                return (
+                  <button key={opt.value} onClick={() => select(opt.value)} style={{
+                    padding: "13px 16px", borderRadius: 11, background: isSel ? "#EBF0FA" : "#fff",
+                    border: `2px solid ${isSel ? '#0A2463' : '#E2E8F0'}`,
+                    textAlign: isRTL ? "right" : "left", fontFamily: ff, fontSize: 14, fontWeight: 500,
+                    color: isSel ? "#0A2463" : "#333", display: "flex", alignItems: "center", gap: 10,
+                    cursor: "pointer", transition: "all 0.2s ease",
+                  }}>
+                    {current.type === "multi" && (
+                      <div style={{ width: 20, height: 20, borderRadius: 5, border: `2px solid ${isSel ? '#0A2463' : '#CCC'}`, background: isSel ? "#0A2463" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}>
+                        {isSel && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
+                    )}
+                    {current.type === "select" && (
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${isSel ? '#0A2463' : '#CCC'}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}>
+                        {isSel && <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#0A2463" }} />}
+                      </div>
+                    )}
+                    {isRTL ? opt.ar : opt.en}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {current.type === "contact" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
+              {[
+                { key: "name", labelAr: "اسمك *", labelEn: "Your name *", ph: isRTL ? "محمد أحمد" : "John Doe" },
+                { key: "phone", labelAr: "رقم الواتساب / الموبايل *", labelEn: "WhatsApp / Phone *", ph: "+20 1xx xxx xxxx", dir: "ltr" },
+                { key: "email", labelAr: "الإيميل", labelEn: "Email", ph: "email@company.com", dir: "ltr" },
+                { key: "company", labelAr: "اسم الشركة", labelEn: "Company name", ph: isRTL ? "اسم شركتك" : "Your Company" },
+                { key: "website", labelAr: "موقعك / صفحة فيسبوك / إنستجرام", labelEn: "Website / Facebook / Instagram", ph: "https://...", dir: "ltr" },
+              ].map(f => (
+                <div key={f.key}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 3, color: "#444" }}>{isRTL ? f.labelAr : f.labelEn}</label>
+                  <input value={contact[f.key]} onChange={e => setContact({ ...contact, [f.key]: e.target.value })}
+                    placeholder={f.ph} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "2px solid #E2E8F0", fontSize: 14, fontFamily: ff, outline: "none", background: "#fff", direction: f.dir || "inherit" }} />
+                </div>
+              ))}
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, marginBottom: 3, color: "#444" }}>{isRTL ? "أي تفاصيل إضافية؟" : "Any additional details?"}</label>
+                <textarea value={contact.notes} onChange={e => setContact({ ...contact, notes: e.target.value })}
+                  rows={3} placeholder={isRTL ? "اكتب أي حاجة تحب توصلنا..." : "Write anything you'd like us to know..."}
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 9, border: "2px solid #E2E8F0", fontSize: 14, fontFamily: ff, outline: "none", resize: "vertical", background: "#fff" }} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: "14px 24px 24px", maxWidth: 560, width: "100%", margin: "0 auto", display: "flex", gap: 10 }}>
+        {step > 0 && (
+          <button onClick={() => setStep(step - 1)} style={{ padding: "12px 22px", borderRadius: 11, border: "2px solid #E2E8F0", background: "#fff", color: "#666", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: ff }}>
+            {isRTL ? "السابق" : "Back"}
+          </button>
+        )}
+        {current.type === "multi" && step < STEPS.length - 1 && (
+          <button onClick={() => { if (canNext()) setStep(step + 1); }} disabled={!canNext()} style={{ flex: 1, padding: "12px 22px", borderRadius: 11, border: "none", background: canNext() ? "linear-gradient(135deg, #0A2463, #1E5AA8)" : "#E2E8F0", color: canNext() ? "#fff" : "#999", fontWeight: 700, fontSize: 14, cursor: canNext() ? "pointer" : "default", fontFamily: ff }}>
+            {isRTL ? "التالي" : "Next"}
+          </button>
+        )}
+        {current.type === "contact" && (
+          <button onClick={submit} disabled={!canNext() || sending} style={{ flex: 1, padding: "13px 22px", borderRadius: 11, border: "none", background: canNext() && !sending ? "linear-gradient(135deg, #0A2463, #1E5AA8)" : "#E2E8F0", color: canNext() && !sending ? "#fff" : "#999", fontWeight: 700, fontSize: 15, cursor: canNext() && !sending ? "pointer" : "default", fontFamily: ff }}>
+            {sending ? (isRTL ? "جاري الإرسال..." : "Sending...") : (isRTL ? "أرسل وتواصل معنا" : "Submit & Contact Us")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
 
 const workflowDetails = {
   ar: [
@@ -13,8 +330,8 @@ const workflowDetails = {
       overview: "نظام أوتوماتيكي متكامل يراقب تسجيلات المكالمات من السنترال، يحوّلها لنصوص عربية عالية الدقة، يصحّحها بذكاء اصطناعي متخصص، ثم يقيّمها على أكثر من 50 معيار في 6 فئات مختلفة مع تقارير تفصيلية وإيميلات تلقائية للمسؤولين.",
       problem: "الشركات تقضي ساعات طويلة في الاستماع للمكالمات يدوياً لتقييم أداء الموظفين. هذا يستهلك وقت المديرين ويؤدي لتقييمات غير موضوعية وغير متسقة، مما يصعّب تحسين جودة خدمة العملاء.",
       solution: "نظامنا يستمع لكل مكالمة أوتوماتيكياً، يحوّلها لنص، ويقيّمها بذكاء اصطناعي بنفس المعايير في كل مرة — بدقة وسرعة ودون تدخل بشري. المديرين يستلموا تقارير جاهزة بدل ما يسمعوا ساعات.",
-      features: ["مراقبة تلقائية لتسجيلات المكالمات من السنترال", "تحويل المكالمات العربية لنصوص مكتوبة بدقة عالية", "تصحيح ذكي للنصوص مع قاموس مخصص لمصطلحاتك", "ربط تلقائي مع نظام إدارة العملاء (CRM)", "تقييم شامل على +50 معيار في 6 فئات مختلفة", "نظام حماية ذكي يمنع العقوبات الخاطئة", "تقارير تفصيلية ترسل بالإيميل تلقائياً", "لوحة متابعة مع تاريخ كامل لكل تقييم"],
-      results: ["توفير +80% من وقت المراجعة اليدوية", "تقييم 100% من المكالمات بدلاً من عينة صغيرة", "معايير موحدة وعادلة لكل الموظفين", "تقارير فورية بدون انتظار"],
+      features: ["مراقبة تلقائية لتسجيلات المكالمات من السنترال","تحويل المكالمات العربية لنصوص مكتوبة بدقة عالية","تصحيح ذكي للنصوص مع قاموس مخصص لمصطلحاتك","ربط تلقائي مع نظام إدارة العملاء (CRM)","تقييم شامل على +50 معيار في 6 فئات مختلفة","نظام حماية ذكي يمنع العقوبات الخاطئة","تقارير تفصيلية ترسل بالإيميل تلقائياً","لوحة متابعة مع تاريخ كامل لكل تقييم"],
+      results: ["توفير +80% من وقت المراجعة اليدوية","تقييم 100% من المكالمات بدلاً من عينة صغيرة","معايير موحدة وعادلة لكل الموظفين","تقارير فورية بدون انتظار"],
       stats: [{ num: "50+", label: "معيار تقييم" }, { num: "6", label: "فئات تقييم" }, { num: "100%", label: "تغطية المكالمات" }, { num: "< 5 دقائق", label: "وقت التقييم" }],
     },
     {
@@ -24,8 +341,8 @@ const workflowDetails = {
       overview: "منظومة متكاملة تدير عملية طلب أسعار الفنادق بالكامل — من إرسال الطلبات التلقائية لمئات الفنادق، تحليل الردود بالذكاء الاصطناعي، التحكم عبر تيليجرام، متابعات تلقائية، وداشبورد ويب تفاعلي لعرض كل الأسعار.",
       problem: "شركات السياحة تتعامل مع مئات الفنادق يومياً. إرسال طلبات الأسعار ومتابعة الردود يدوياً يستهلك ساعات من وقت الموظفين ويؤدي لفقدان فرص بسبب التأخير.",
       solution: "نظام واحد يدير كل شيء — يرسل الطلبات أوتوماتيكياً، يقرأ الردود ويستخرج الأسعار تلقائياً، يتابع الفنادق اللي ما ردتش، ويعرض كل البيانات في لوحة تحكم سهلة.",
-      features: ["قاعدة بيانات شاملة لمئات الفنادق في عدة مناطق", "إرسال إيميلات طلب أسعار مخصصة تلقائياً", "قراءة وتحليل ردود الفنادق بالذكاء الاصطناعي", "التحكم الكامل عبر أوامر تيليجرام", "متابعات تلقائية للفنادق غير المستجيبة", "لوحة تحكم ويب تفاعلية للبحث والمقارنة", "تقارير يومية وأسبوعية تلقائية", "أرشيف كامل لكل الأسعار والتواريخ"],
-      results: ["توفير 90% من وقت الموظفين", "تغطية كاملة لكل الفنادق بدون نسيان", "ردود أسرع = حجوزات أكتر", "قرارات تسعير مبنية على بيانات حقيقية"],
+      features: ["قاعدة بيانات شاملة لمئات الفنادق في عدة مناطق","إرسال إيميلات طلب أسعار مخصصة تلقائياً","قراءة وتحليل ردود الفنادق بالذكاء الاصطناعي","التحكم الكامل عبر أوامر تيليجرام","متابعات تلقائية للفنادق غير المستجيبة","لوحة تحكم ويب تفاعلية للبحث والمقارنة","تقارير يومية وأسبوعية تلقائية","أرشيف كامل لكل الأسعار والتواريخ"],
+      results: ["توفير 90% من وقت الموظفين","تغطية كاملة لكل الفنادق بدون نسيان","ردود أسرع = حجوزات أكتر","قرارات تسعير مبنية على بيانات حقيقية"],
       stats: [{ num: "250+", label: "فندق" }, { num: "14", label: "منطقة" }, { num: "90%", label: "توفير وقت" }, { num: "0", label: "فنادق منسية" }],
     },
     {
@@ -35,8 +352,8 @@ const workflowDetails = {
       overview: "نظام ربط ذكي بين المتجر الإلكتروني ونظام إدارة الأعمال (ERP) — كل طلب جديد ينشئ أوتوماتيكياً عميل وأمر بيع ومنتجات مع معالجة ذكية للتكرارات والأخطاء بدون أي تدخل يدوي.",
       problem: "إدخال الطلبات يدوياً من المتجر لنظام الإدارة يضيع وقت كبير، يسبب أخطاء في البيانات، ويأخر تحديث المخزون مما يؤثر على تجربة العميل.",
       solution: "بمجرد ما العميل يطلب من المتجر، النظام يعمل كل حاجة لوحده — يشوف لو العميل موجود، يعمل أمر البيع، يضيف المنتجات، ويتعامل مع أي أخطاء بذكاء بدون ما تحتاج تتدخل.",
-      features: ["مزامنة فورية لكل طلب جديد", "إنشاء تلقائي للعملاء مع فحص التكرارات", "إنشاء أوامر بيع كاملة التفاصيل", "معالجة ذكية للأخطاء وإعادة المحاولة تلقائياً", "مزامنة حالة الطلبات بين النظامين", "تنبيهات فورية عند حدوث أي مشكلة", "دعم العملات والأسعار المتعددة", "سجل كامل وشفاف لكل عملية مزامنة"],
-      results: ["صفر إدخال يدوي = صفر أخطاء بشرية", "مخزون محدّث لحظة بلحظة", "توفير ساعات يومياً من وقت الموظفين", "تجربة عميل أسرع وأفضل"],
+      features: ["مزامنة فورية لكل طلب جديد","إنشاء تلقائي للعملاء مع فحص التكرارات","إنشاء أوامر بيع كاملة التفاصيل","معالجة ذكية للأخطاء وإعادة المحاولة تلقائياً","مزامنة حالة الطلبات بين النظامين","تنبيهات فورية عند حدوث أي مشكلة","دعم العملات والأسعار المتعددة","سجل كامل وشفاف لكل عملية مزامنة"],
+      results: ["صفر إدخال يدوي = صفر أخطاء بشرية","مخزون محدّث لحظة بلحظة","توفير ساعات يومياً من وقت الموظفين","تجربة عميل أسرع وأفضل"],
       stats: [{ num: "0", label: "إدخال يدوي" }, { num: "< 5 ث", label: "وقت المزامنة" }, { num: "100%", label: "دقة البيانات" }, { num: "24/7", label: "يعمل بدون توقف" }],
     },
     {
@@ -45,20 +362,20 @@ const workflowDetails = {
       hero: "فلتر المرشحين بالذكاء الاصطناعي — وفّر أيام من المراجعة",
       overview: "نظام ذكي يستقبل السير الذاتية، يستخرج البيانات المهمة بالذكاء الاصطناعي، يقيّم كل مرشح حسب متطلبات الوظيفة المحددة، ويرتّبهم من الأفضل للأقل مع تقارير واضحة وإشعارات فورية.",
       problem: "مراجعة مئات السير الذاتية يدوياً يستهلك أيام من وقت فريق الموارد البشرية. الكثير من المرشحين غير مناسبين والوقت يضيع في فحصهم واحد واحد.",
-      solution: "أرسل السيرة الذاتية والنظام يعمل الباقي — يقرأ، يحلل، يقيّم، ويرتّب المرشحين أوتوماتيكياً حسب المعايير اللي أنت حاططها. تقدر تركّز وقتك على المقابلات بدل القراءة.",
-      features: ["استقبال السير الذاتية بصيغ متعددة", "استخراج ذكي للبيانات (اسم، خبرة، مهارات، تعليم)", "تقييم تلقائي حسب متطلبات كل وظيفة", "ترتيب المرشحين بنظام نقاط عادل وشفاف", "تخزين وأرشفة تلقائية لكل السير الذاتية", "تقارير ملخصة بأفضل المرشحين", "دعم كامل للعربية والإنجليزية", "إشعارات فورية لما يجي مرشح مميز"],
-      results: ["توفير 95% من وقت المراجعة", "فحص كل CV في أقل من 30 ثانية", "معايير تقييم موحدة وعادلة", "ما يفوتك مرشح مميز أبداً"],
+      solution: "أرسل السيرة الذاتية والنظام يعمل الباقي — يقرأ، يحلل، يقيّم، ويرتّب المرشحين أوتوماتيكياً حسب المعايير اللي أنت حاططها.",
+      features: ["استقبال السير الذاتية بصيغ متعددة","استخراج ذكي للبيانات (اسم، خبرة، مهارات، تعليم)","تقييم تلقائي حسب متطلبات كل وظيفة","ترتيب المرشحين بنظام نقاط عادل وشفاف","تخزين وأرشفة تلقائية لكل السير الذاتية","تقارير ملخصة بأفضل المرشحين","دعم كامل للعربية والإنجليزية","إشعارات فورية لما يجي مرشح مميز"],
+      results: ["توفير 95% من وقت المراجعة","فحص كل CV في أقل من 30 ثانية","معايير تقييم موحدة وعادلة","ما يفوتك مرشح مميز أبداً"],
       stats: [{ num: "95%", label: "توفير وقت" }, { num: "< 30 ث", label: "لكل سيرة ذاتية" }, { num: "بدون حدود", label: "عدد السير" }, { num: "AR/EN", label: "ثنائي اللغة" }],
     },
     {
       id: "ai-bot", tag: "خدمة العملاء", color: "#0A6332",
       title: "AI Bot — وكيل ذكاء اصطناعي لخدمة العملاء",
       hero: "بوت محادثة ذكي يخدم عملاءك 24/7 بالعربي والإنجليزي",
-      overview: "شات بوت متقدم يعمل بأحدث تقنيات الذكاء الاصطناعي، يتحدث العربية والإنجليزية بطلاقة، مع قاعدة معرفة شاملة عن منتجاتك وخدماتك وإمكانية تحويل المحادثة لموظف بشري تلقائياً لما يحتاج العميل مساعدة متخصصة.",
-      problem: "العملاء بيسألوا نفس الأسئلة مرات كتير، الموظفين مش متاحين 24 ساعة، والردود بتتأخر خصوصاً بالليل وأيام الإجازات — وكل رد متأخر ممكن يكون عميل ضايع.",
+      overview: "شات بوت متقدم يعمل بأحدث تقنيات الذكاء الاصطناعي، يتحدث العربية والإنجليزية بطلاقة، مع قاعدة معرفة شاملة عن منتجاتك وخدماتك وإمكانية تحويل المحادثة لموظف بشري تلقائياً.",
+      problem: "العملاء بيسألوا نفس الأسئلة مرات كتير، الموظفين مش متاحين 24 ساعة، والردود بتتأخر خصوصاً بالليل وأيام الإجازات.",
       solution: "بوت ذكي بيرد على العملاء فوراً في أي وقت، بيفهم السياق والنية، بيجاوب من قاعدة معرفة محدّثة عن شركتك، ولو المسألة محتاجة تدخل بشري بيحوّل المحادثة لموظف مع كل السياق محفوظ.",
-      features: ["دعم كامل للعربية والإنجليزية مع كشف تلقائي للغة", "قاعدة معرفة ذكية قابلة للتحديث عن منتجاتك وخدماتك", "يعمل على واتساب وتيليجرام وموقعك في نفس الوقت", "تحويل ذكي للموظف البشري مع حفظ كل سياق المحادثة", "تحليلات وتقارير مفصلة عن أسئلة العملاء وأداء البوت", "تخصيص كامل لشخصية البوت حسب هوية شركتك", "يتعلم ويتحسن مع الوقت", "تكلفة تشغيل أقل بكتير من موظف إضافي"],
-      results: ["خدمة عملاء 24/7 بدون إضافة موظفين", "رد فوري في أقل من ثانيتين", "أكثر من 90% من الأسئلة بتتحل تلقائياً", "رضا عملاء أعلى = مبيعات أكتر"],
+      features: ["دعم كامل للعربية والإنجليزية مع كشف تلقائي للغة","قاعدة معرفة ذكية قابلة للتحديث عن منتجاتك وخدماتك","يعمل على واتساب وتيليجرام وموقعك في نفس الوقت","تحويل ذكي للموظف البشري مع حفظ كل سياق المحادثة","تحليلات وتقارير مفصلة عن أسئلة العملاء وأداء البوت","تخصيص كامل لشخصية البوت حسب هوية شركتك","يتعلم ويتحسن مع الوقت","تكلفة تشغيل أقل بكتير من موظف إضافي"],
+      results: ["خدمة عملاء 24/7 بدون إضافة موظفين","رد فوري في أقل من ثانيتين","أكثر من 90% من الأسئلة بتتحل تلقائياً","رضا عملاء أعلى = مبيعات أكتر"],
       stats: [{ num: "24/7", label: "متاح دائماً" }, { num: "< 2 ث", label: "وقت الرد" }, { num: "AR/EN", label: "متعدد اللغات" }, { num: "90%+", label: "حل تلقائي" }],
     },
   ],
@@ -69,9 +386,9 @@ const workflowDetails = {
       hero: "Turn your calls into actionable data — automatically",
       overview: "A fully automated system that monitors call recordings from your PBX, transcribes them into high-accuracy Arabic text, AI-corrects the transcripts, then evaluates against 50+ criteria across 6 categories with detailed reports and automatic emails to managers.",
       problem: "Companies spend hours manually listening to calls to evaluate employee performance. This consumes manager time and leads to inconsistent, subjective evaluations that make it hard to improve service quality.",
-      solution: "Our system listens to every call automatically, converts it to text, and evaluates it with AI using the same criteria every time — with precision, speed, and zero human intervention. Managers receive ready-made reports instead of spending hours listening.",
-      features: ["Automatic monitoring of call recordings from PBX", "High-accuracy Arabic speech-to-text conversion", "Smart transcript correction with custom terminology dictionary", "Automatic matching with your CRM system", "Comprehensive evaluation on 50+ criteria across 6 categories", "Smart safety layer preventing false penalties", "Detailed reports sent automatically via email", "Full history dashboard for every evaluation"],
-      results: ["Save 80%+ of manual review time", "Evaluate 100% of calls instead of small samples", "Unified, fair standards for all employees", "Instant reports with no waiting"],
+      solution: "Our system listens to every call automatically, converts it to text, and evaluates it with AI using the same criteria every time — with precision, speed, and zero human intervention.",
+      features: ["Automatic monitoring of call recordings from PBX","High-accuracy Arabic speech-to-text conversion","Smart transcript correction with custom terminology dictionary","Automatic matching with your CRM system","Comprehensive evaluation on 50+ criteria across 6 categories","Smart safety layer preventing false penalties","Detailed reports sent automatically via email","Full history dashboard for every evaluation"],
+      results: ["Save 80%+ of manual review time","Evaluate 100% of calls instead of small samples","Unified, fair standards for all employees","Instant reports with no waiting"],
       stats: [{ num: "50+", label: "Criteria" }, { num: "6", label: "Categories" }, { num: "100%", label: "Call Coverage" }, { num: "< 5 min", label: "Per Evaluation" }],
     },
     {
@@ -81,8 +398,8 @@ const workflowDetails = {
       overview: "An integrated system managing the entire hotel rate request process — from sending automated requests to hundreds of hotels, AI-parsing replies, Telegram bot control, auto follow-ups, and an interactive web dashboard for price comparison.",
       problem: "Tourism companies deal with hundreds of hotels daily. Manually sending rate requests and tracking replies wastes hours of employee time and leads to missed opportunities.",
       solution: "One system manages everything — sends requests automatically, reads and extracts prices from replies, follows up with non-responsive hotels, and displays all data in an easy-to-use dashboard.",
-      features: ["Comprehensive database of hundreds of hotels across multiple regions", "Automated custom rate request emails", "AI-powered reading and analysis of hotel replies", "Full control via Telegram commands", "Automatic follow-ups for non-responsive hotels", "Interactive web dashboard for search and comparison", "Daily and weekly automated reports", "Complete archive of all rates and dates"],
-      results: ["Save 90% of employee time", "Full coverage — no hotel forgotten", "Faster responses = more bookings", "Pricing decisions based on real data"],
+      features: ["Comprehensive database of hundreds of hotels across multiple regions","Automated custom rate request emails","AI-powered reading and analysis of hotel replies","Full control via Telegram commands","Automatic follow-ups for non-responsive hotels","Interactive web dashboard for search and comparison","Daily and weekly automated reports","Complete archive of all rates and dates"],
+      results: ["Save 90% of employee time","Full coverage — no hotel forgotten","Faster responses = more bookings","Pricing decisions based on real data"],
       stats: [{ num: "250+", label: "Hotels" }, { num: "14", label: "Regions" }, { num: "90%", label: "Time Saved" }, { num: "0", label: "Hotels Missed" }],
     },
     {
@@ -91,9 +408,9 @@ const workflowDetails = {
       hero: "Automatic sync — every store order reaches your system instantly",
       overview: "A smart integration system between your online store and ERP — every new order automatically creates a customer, sales order, and products with smart duplicate and error handling, zero manual intervention needed.",
       problem: "Manually entering online orders into ERP wastes significant time, causes data errors, and delays inventory updates affecting customer experience.",
-      solution: "Once a customer places an order, the system does everything — checks if the customer exists, creates the sales order, adds products, and handles any errors intelligently without any human intervention.",
-      features: ["Instant sync for every new order", "Automatic customer creation with duplicate check", "Complete sales order creation with full details", "Smart error handling and automatic retry", "Order status sync between both systems", "Instant alerts on any issues", "Multi-currency and pricing support", "Complete transparent log for every sync operation"],
-      results: ["Zero manual entry = zero human errors", "Inventory updated in real-time", "Save hours of employee time daily", "Faster, better customer experience"],
+      solution: "Once a customer places an order, the system does everything — checks if the customer exists, creates the sales order, adds products, and handles any errors intelligently.",
+      features: ["Instant sync for every new order","Automatic customer creation with duplicate check","Complete sales order creation with full details","Smart error handling and automatic retry","Order status sync between both systems","Instant alerts on any issues","Multi-currency and pricing support","Complete transparent log for every sync operation"],
+      results: ["Zero manual entry = zero human errors","Inventory updated in real-time","Save hours of employee time daily","Faster, better customer experience"],
       stats: [{ num: "0", label: "Manual Entry" }, { num: "< 5s", label: "Sync Time" }, { num: "100%", label: "Data Accuracy" }, { num: "24/7", label: "Always Running" }],
     },
     {
@@ -102,20 +419,20 @@ const workflowDetails = {
       hero: "AI-powered candidate filtering — save days of review time",
       overview: "A smart system that receives CVs, extracts key data using AI, evaluates each candidate against specified job requirements, and ranks them from best to least suitable with clear reports and instant notifications.",
       problem: "Reviewing hundreds of CVs manually takes days of HR time. Many candidates are unsuitable and time is wasted screening them one by one.",
-      solution: "Send the CV and the system does the rest — reads, analyzes, evaluates, and ranks candidates automatically based on your criteria. Focus your time on interviews instead of reading.",
-      features: ["Accept CVs in multiple formats", "Smart data extraction (name, experience, skills, education)", "Automatic evaluation against each job's requirements", "Fair and transparent point-based candidate ranking", "Automatic archiving of all CVs", "Summary reports of top candidates", "Full Arabic and English language support", "Instant notifications for outstanding candidates"],
-      results: ["Save 95% of review time", "Screen each CV in under 30 seconds", "Unified, fair evaluation criteria", "Never miss a great candidate"],
+      solution: "Send the CV and the system does the rest — reads, analyzes, evaluates, and ranks candidates automatically based on your criteria.",
+      features: ["Accept CVs in multiple formats","Smart data extraction (name, experience, skills, education)","Automatic evaluation against each job's requirements","Fair and transparent point-based candidate ranking","Automatic archiving of all CVs","Summary reports of top candidates","Full Arabic and English language support","Instant notifications for outstanding candidates"],
+      results: ["Save 95% of review time","Screen each CV in under 30 seconds","Unified, fair evaluation criteria","Never miss a great candidate"],
       stats: [{ num: "95%", label: "Time Saved" }, { num: "< 30s", label: "Per CV" }, { num: "Unlimited", label: "CV Capacity" }, { num: "AR/EN", label: "Bilingual" }],
     },
     {
       id: "ai-bot", tag: "Customer Service", color: "#0A6332",
       title: "AI Bot — Intelligent Customer Service Agent",
       hero: "Smart chatbot serving your customers 24/7 in Arabic & English",
-      overview: "An advanced chatbot powered by cutting-edge AI technology, fluent in Arabic and English, with a comprehensive knowledge base about your products and services, and automatic human handoff when customers need specialized help.",
-      problem: "Customers ask repetitive questions, staff aren't available 24/7, and responses get delayed especially at night and on holidays — every late response is a potentially lost customer.",
+      overview: "An advanced chatbot powered by cutting-edge AI technology, fluent in Arabic and English, with a comprehensive knowledge base about your products and services, and automatic human handoff when needed.",
+      problem: "Customers ask repetitive questions, staff aren't available 24/7, and responses get delayed especially at night and on holidays.",
       solution: "A smart bot responds to customers instantly at any time, understands context and intent, answers from an updated knowledge base about your company, and hands off to a human with full context when needed.",
-      features: ["Full Arabic & English support with auto language detection", "Smart updatable knowledge base about your products & services", "Works on WhatsApp, Telegram & your website simultaneously", "Smart human handoff with full conversation context preserved", "Detailed analytics and reports on customer questions and bot performance", "Fully customizable bot personality matching your brand", "Learns and improves over time", "Operating cost far less than an additional employee"],
-      results: ["24/7 customer service without hiring more staff", "Instant response in under 2 seconds", "90%+ of questions resolved automatically", "Higher customer satisfaction = more sales"],
+      features: ["Full Arabic & English support with auto language detection","Smart updatable knowledge base about your products & services","Works on WhatsApp, Telegram & your website simultaneously","Smart human handoff with full conversation context preserved","Detailed analytics and reports on customer questions and bot performance","Fully customizable bot personality matching your brand","Learns and improves over time","Operating cost far less than an additional employee"],
+      results: ["24/7 customer service without hiring more staff","Instant response in under 2 seconds","90%+ of questions resolved automatically","Higher customer satisfaction = more sales"],
       stats: [{ num: "24/7", label: "Always Available" }, { num: "< 2s", label: "Response Time" }, { num: "AR/EN", label: "Multilingual" }, { num: "90%+", label: "Auto-Resolve" }],
     },
   ],
@@ -190,14 +507,12 @@ function DetailPage({ wf, t, isRTL, ff, onBack, onContact }) {
           <span style={{ fontWeight: 800, fontSize: 17, color: "#0A2463" }}>Engosoft</span>
         </div>
       </div>
-
       <div style={{ padding: "80px 40px 50px", textAlign: "center", background: `linear-gradient(180deg, ${wf.color}08 0%, #FAFAFA 100%)`, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: wf.color, opacity: 0.04, filter: "blur(80px)", top: -100, left: "50%", transform: "translateX(-50%)" }} />
         <span style={{ display: "inline-block", padding: "8px 20px", borderRadius: 100, background: wf.color + "15", color: wf.color, fontSize: 14, fontWeight: 700, marginBottom: 20 }}>{wf.tag}</span>
         <h1 style={{ fontSize: 38, fontWeight: 900, marginBottom: 16, color: "#1A1A2E", maxWidth: 700, margin: "0 auto 16px" }}>{wf.title}</h1>
         <p style={{ fontSize: 19, color: "#555", maxWidth: 600, margin: "0 auto" }}>{wf.hero}</p>
       </div>
-
       <div style={{ display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap", padding: "40px 40px 0" }}>
         {wf.stats.map((s, i) => (
           <div key={i} style={{ textAlign: "center", padding: "20px 28px", background: "#fff", borderRadius: 14, border: "1px solid #EEF2F7", minWidth: 120 }}>
@@ -206,13 +521,11 @@ function DetailPage({ wf, t, isRTL, ff, onBack, onContact }) {
           </div>
         ))}
       </div>
-
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "50px 40px" }}>
         <div style={{ marginBottom: 40 }}>
           <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 14, color: "#0A2463" }}>{t.detail.overview}</h2>
           <p style={{ fontSize: 15, color: "#555", lineHeight: 2 }}>{wf.overview}</p>
         </div>
-
         <div className="dg" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 40 }}>
           <div style={{ padding: 24, borderRadius: 14, background: "#FFF5F5", border: "1px solid #FED7D7" }}>
             <div style={{ fontSize: 24, marginBottom: 10 }}>⚠️</div>
@@ -225,7 +538,6 @@ function DetailPage({ wf, t, isRTL, ff, onBack, onContact }) {
             <p style={{ fontSize: 14, color: "#666", lineHeight: 1.8 }}>{wf.solution}</p>
           </div>
         </div>
-
         <div style={{ marginBottom: 40 }}>
           <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 16, color: "#0A2463" }}>{t.detail.features}</h2>
           <div className="dg" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -237,8 +549,6 @@ function DetailPage({ wf, t, isRTL, ff, onBack, onContact }) {
             ))}
           </div>
         </div>
-
-        {/* Results Section */}
         <div style={{ marginBottom: 50 }}>
           <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 16, color: "#0A2463" }}>{t.detail.results}</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -250,7 +560,6 @@ function DetailPage({ wf, t, isRTL, ff, onBack, onContact }) {
             ))}
           </div>
         </div>
-
         <div style={{ textAlign: "center", padding: 40, borderRadius: 18, background: `linear-gradient(135deg, ${wf.color}0D, ${wf.color}05)`, border: `1px solid ${wf.color}20` }}>
           <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 16, color: "#1A1A2E" }}>{t.detail.cta}</h3>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
@@ -306,16 +615,16 @@ export default function App() {
       .bs:hover{background:#0A2463;color:#fff}
       .mt{display:flex;animation:marquee 30s linear infinite}.mt:hover{animation-play-state:paused}
       .gt{background:linear-gradient(135deg,#0A2463,#1E5AA8,#3B82F6);background-size:200% 200%;animation:gradientShift 4s ease infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-      .nl{position:relative}.nl::after{content:'';position:absolute;bottom:-4px;${isRTL?'right':'left'}:0;width:0;height:2px;background:#0A2463;transition:width .3s ease}
+      .nl{position:relative}.nl::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:#0A2463;transition:width .3s ease}
       .nl:hover::after,.nl.ac::after{width:100%}
-      input,textarea,select{width:100%;padding:14px 18px;border:2px solid #E2E8F0;border-radius:10px;font-size:15px;transition:all .3s;background:#fff;outline:none;font-family:${ff}}
+      input,textarea,select{width:100%;padding:14px 18px;border:2px solid #E2E8F0;border-radius:10px;font-size:15px;transition:all .3s;background:#fff;outline:none;}
       input:focus,textarea:focus,select:focus{border-color:#0A2463;box-shadow:0 0 0 4px rgba(10,36,99,.08)}
       .bl{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;animation:float 8s ease-in-out infinite}
       @media(max-width:768px){.ht{font-size:34px!important}.st{font-size:28px!important}.g2{grid-template-columns:1fr!important}.hm{display:none!important}.hs{flex-direction:column;gap:16px!important}.hb{flex-direction:column;align-items:center}.nvl{display:none!important}.mt2{display:flex!important}.pci{flex-direction:column!important}.dg{grid-template-columns:1fr!important}}
     `;
     document.head.appendChild(s);
     return () => document.head.removeChild(s);
-  }, [isRTL, ff]);
+  }, []);
 
   const go = id => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMobileMenu(false); };
 
@@ -338,6 +647,7 @@ export default function App() {
       setFormStatus(d.success ? "success" : "error");
     } catch { setFormStatus("error"); }
   };
+
   if (currentPage === "assessment") {
     return (
       <div dir={isRTL ? "rtl" : "ltr"} style={{ fontFamily: ff }}>
@@ -362,8 +672,7 @@ export default function App() {
   return (
     <div dir={isRTL ? "rtl" : "ltr"} style={{ fontFamily: ff, color: "#1A1A2E", lineHeight: 1.7 }}>
       <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 9997, opacity: 0.025, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
-
-      <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9998, width: 60, height: 60, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(37,211,102,0.45)", animation: "waPulse 2s infinite", textDecoration: "none", transition: "transform .3" }}
+      <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9998, width: 60, height: 60, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(37,211,102,0.45)", animation: "waPulse 2s infinite", textDecoration: "none" }}
         onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}><WaSvg /></a>
 
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000, padding: "0 40px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", background: scrollY > 50 ? "rgba(255,255,255,0.92)" : "transparent", backdropFilter: scrollY > 50 ? "blur(20px)" : "none", borderBottom: scrollY > 50 ? "1px solid rgba(0,0,0,0.06)" : "none", transition: "all .4s ease" }}>
@@ -390,10 +699,9 @@ export default function App() {
         </div>
       )}
 
-      {/* HERO */}
       <section id="home" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", padding: "120px 40px 80px", background: "linear-gradient(180deg, #F0F4FF 0%, #FAFAFA 100%)" }}>
-        <div className="bl" style={{ width: 500, height: 500, background: "#0A2463", top: -100, [isRTL?'left':'right']: -150 }} />
-        <div className="bl" style={{ width: 400, height: 400, background: "#3B82F6", bottom: -100, [isRTL?'right':'left']: -100, animationDelay: "3s" }} />
+        <div className="bl" style={{ width: 500, height: 500, background: "#0A2463", top: -100, right: -150 }} />
+        <div className="bl" style={{ width: 400, height: 400, background: "#3B82F6", bottom: -100, left: -100, animationDelay: "3s" }} />
         <div style={{ maxWidth: 900, textAlign: "center", position: "relative", zIndex: 2 }}>
           <div className="af" style={{ display: "inline-block", padding: "8px 20px", borderRadius: 100, background: "rgba(10,36,99,0.08)", color: "#0A2463", fontSize: 14, fontWeight: 600, marginBottom: 28 }}>✦ {t.hero.badge}</div>
           <h1 className="af af1 ht" style={{ fontSize: 64, fontWeight: 900, lineHeight: 1.15, marginBottom: 24 }}>{t.hero.title1}<br /><span className="gt">{t.hero.title2}</span><br />{t.hero.title3}</h1>
@@ -413,7 +721,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* SERVICES */}
       <section id="services" style={{ padding: "100px 40px", maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 64 }}>
           <h2 className="st" style={{ fontSize: 44, fontWeight: 900, marginBottom: 16 }}>{t.services.title}</h2>
@@ -422,7 +729,7 @@ export default function App() {
         <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
           {t.services.items.map((item, i) => (
             <div key={i} className="ch" style={{ background: "#fff", borderRadius: 20, padding: 36, border: "1px solid #EEF2F7", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", top: -30, [isRTL?'left':'right']: -30, width: 120, height: 120, borderRadius: "50%", background: `linear-gradient(135deg, ${['#0A2463','#1E5AA8','#714B67','#3B82F6'][i]}, transparent)`, opacity: 0.06 }} />
+              <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: `linear-gradient(135deg, ${['#0A2463','#1E5AA8','#714B67','#3B82F6'][i]}, transparent)`, opacity: 0.06 }} />
               <div style={{ fontSize: 40, marginBottom: 16 }}>{item.icon}</div>
               <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12, color: "#0A2463" }}>{item.title}</h3>
               <p style={{ fontSize: 15, color: "#666", marginBottom: 20, lineHeight: 1.8 }}>{item.desc}</p>
@@ -434,7 +741,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* PRODUCTS */}
       <section id="products" style={{ padding: "100px 40px", background: "linear-gradient(180deg, #FAFAFA 0%, #F0F4FF 50%, #FAFAFA 100%)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
@@ -456,7 +762,7 @@ export default function App() {
                           <span style={{ fontSize: 13, fontWeight: 600, color: item.color }}>{st.num} {st.label}</span>
                         </div>
                       ))}
-                      <span style={{ [isRTL ? 'marginRight' : 'marginLeft']: "auto", fontSize: 14, fontWeight: 700, color: item.color }}>{t.products.viewDetails}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 14, fontWeight: 700, color: item.color }}>{t.products.viewDetails}</span>
                     </div>
                   </div>
                   <div className="hm" style={{ width: 200, height: 150, borderRadius: 14, flexShrink: 0, background: `linear-gradient(135deg, ${item.color}12, ${item.color}06)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -475,7 +781,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* TOOLS */}
       <section id="tools" style={{ padding: "80px 0", overflow: "hidden" }}>
         <h2 style={{ textAlign: "center", fontSize: 32, fontWeight: 900, marginBottom: 48 }}>{t.tools.title}</h2>
         <div style={{ overflow: "hidden", direction: "ltr" }}>
@@ -490,7 +795,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* CONTACT */}
       <section id="contact" style={{ padding: "100px 40px", background: "linear-gradient(180deg, #FAFAFA 0%, #F0F4FF 100%)" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
@@ -503,30 +807,29 @@ export default function App() {
               <h3 style={{ fontSize: 24, fontWeight: 800, color: "#276749", marginBottom: 8 }}>{t.contact.form.success}</h3>
               <p style={{ color: "#666", marginBottom: 24 }}>{t.contact.form.successSub}</p>
               <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#25D366", color: "#fff", padding: "14px 28px", borderRadius: 12, fontWeight: 600, textDecoration: "none" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                {isRTL ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
+                <WaSmall />{isRTL ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
               </a>
             </div>
           ) : (
             <div style={{ background: "#fff", borderRadius: 24, padding: 48, border: "1px solid #EEF2F7", boxShadow: "0 8px 40px rgba(0,0,0,.04)" }}>
               <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.name} *</label><input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={isRTL ? "محمد أحمد" : "John Doe"} /></div>
-                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.email} *</label><input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="email@company.com" style={{ direction: "ltr", textAlign: isRTL ? "right" : "left" }} /></div>
+                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.name} *</label><input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={isRTL ? "محمد أحمد" : "John Doe"} style={{ fontFamily: ff }} /></div>
+                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.email} *</label><input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="email@company.com" style={{ direction: "ltr", fontFamily: ff }} /></div>
               </div>
               <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
-                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.phone}</label><input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+20 1xx xxx xxxx" style={{ direction: "ltr", textAlign: isRTL ? "right" : "left" }} /></div>
-                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.company}</label><input value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder={isRTL ? "اسم شركتك" : "Your Company"} /></div>
+                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.phone}</label><input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+20 1xx xxx xxxx" style={{ direction: "ltr", fontFamily: ff }} /></div>
+                <div><label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.company}</label><input value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} placeholder={isRTL ? "اسم شركتك" : "Your Company"} style={{ fontFamily: ff }} /></div>
               </div>
               <div style={{ marginBottom: 20 }}>
                 <label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.service} *</label>
-                <select value={formData.service} onChange={e => setFormData({...formData, service: e.target.value})}>
+                <select value={formData.service} onChange={e => setFormData({...formData, service: e.target.value})} style={{ fontFamily: ff }}>
                   <option value="">{isRTL ? "— اختر —" : "— Select —"}</option>
                   {t.contact.form.serviceOptions.map((o, i) => <option key={i} value={o}>{o}</option>)}
                 </select>
               </div>
               <div style={{ marginBottom: 28 }}>
                 <label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "#333" }}>{t.contact.form.message}</label>
-                <textarea rows={4} value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} placeholder={isRTL ? "اكتب تفاصيل مشروعك..." : "Describe your project..."} />
+                <textarea rows={4} value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} placeholder={isRTL ? "اكتب تفاصيل مشروعك..." : "Describe your project..."} style={{ fontFamily: ff }} />
               </div>
               {formStatus === "error" && <div style={{ padding: "12px 20px", borderRadius: 10, background: "#FFF5F5", color: "#C53030", fontSize: 14, marginBottom: 16, textAlign: "center" }}>{t.contact.form.error}</div>}
               <button className="bp" onClick={handleSubmit} disabled={formStatus === "sending" || !formData.name || !formData.email || !formData.service} style={{ width: "100%", fontFamily: ff, fontSize: 17, padding: "18px 36px", opacity: (formStatus === "sending" || !formData.name || !formData.email || !formData.service) ? 0.6 : 1 }}>
@@ -535,7 +838,7 @@ export default function App() {
               <div style={{ textAlign: "center", marginTop: 24, paddingTop: 24, borderTop: "1px solid #F0F0F0" }}>
                 <p style={{ fontSize: 15, color: "#888", marginBottom: 12 }}>{t.contact.form.meeting}</p>
                 <a href={GOOGLE_MEET_LINK} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 28px", borderRadius: 12, background: "#fff", border: "2px solid #E2E8F0", color: "#1A1A2E", fontWeight: 600, fontSize: 15, textDecoration: "none", fontFamily: ff }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "#4285F4", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>G</div>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: "#4285F4", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 800 }}>G</div>
                   Google Meet
                 </a>
               </div>
