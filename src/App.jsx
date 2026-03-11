@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useCallback } from "react";
 const WHATSAPP_NUMBER = "201007725744";
 const WEB3FORMS_KEY = "37492e85-55bb-4594-8018-2647115be762";
 const GOOGLE_MEET_LINK = "https://calendar.app.google/35V4etCwYoD5poM77";
