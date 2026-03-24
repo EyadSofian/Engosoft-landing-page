@@ -1,1 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+:root {
+  --bg: #0B0E14; --bg2: #10131A; --surface: rgba(255,255,255,0.025);
+  --glass: rgba(255,255,255,0.035); --glass-b: rgba(255,255,255,0.07);
+  --glass-h: rgba(255,255,255,0.06); --text: #E4E4E9; --text2: #9CA3AF;
+  --muted: #5B6170; --accent: #34D399; --accent2: #818CF8;
+  --glow: rgba(52,211,153,0.06); --r: 16px;
+}
+.light {
+  --bg: #F7F8FA; --bg2: #FFF; --surface: rgba(0,0,0,0.015);
+  --glass: rgba(255,255,255,0.65); --glass-b: rgba(0,0,0,0.06);
+  --glass-h: rgba(255,255,255,0.85); --text: #0F172A; --text2: #475569;
+  --muted: #94A3B8; --accent: #059669; --accent2: #6366F1;
+  --glow: rgba(5,150,105,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);
+  transition:background .4s,color .4s;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--glass-b);border-radius:3px}
+a{text-decoration:none;color:inherit}
