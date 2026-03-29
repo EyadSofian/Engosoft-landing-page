@@ -1,402 +1,296 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
-import { Moon, Sun, ExternalLink, Github, Linkedin, MessageCircle, Mail, X, Play, Menu } from "lucide-react";
-import { PROJECTS, CATEGORIES, SKILLS, EXPERIENCE, CERTS } from "./data";
+import { useState, useEffect, useRef, useMemo } from "react";
 
-/* ── helpers ── */
-function Reveal({ children, delay = 0 }) {
-  const ref = useRef(null);
-  const v = useInView(ref, { once: true, margin: "-40px" });
-  return <motion.div ref={ref} initial={{ opacity: 0, y: 24 }} animate={v ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}>{children}</motion.div>;
+const WA = "201007725744";
+const CAL = "https://calendar.app.google/35V4etCwYoD5poM77";
+
+/* ═══ THEMES ═══ */
+const LIGHT = { bg: "#f8f9fa", card: "#ffffff", cardBorder: "#e0e0e0", cardHoverBorder: "#1a73e8", text: "#202124", textSub: "#5f6368", accent: "#1a73e8", accentLight: "#e8f0fe", accentHover: "#1557b0", accentText: "#fff", btnOutline: "#dadce0", nav: "rgba(255,255,255,0.85)", navBorder: "#e8eaed", faqBorder: "rgba(0,0,0,0.06)", dot: "rgba(26,115,232,0.12)", heroBg: "#ffffff" };
+const DARK = { bg: "#0e0e0e", card: "#1e1e1e", cardBorder: "#303030", cardHoverBorder: "#8ab4f8", text: "#e8eaed", textSub: "#9aa0a6", accent: "#8ab4f8", accentLight: "rgba(138,180,248,0.12)", accentHover: "#aecbfa", accentText: "#1a1a1a", btnOutline: "#3c4043", nav: "rgba(14,14,14,0.85)", navBorder: "rgba(255,255,255,0.06)", faqBorder: "rgba(255,255,255,0.08)", dot: "rgba(138,180,248,0.08)", heroBg: "#0e0e0e" };
+
+/* ═══ SERVICES ═══ */
+const SVC = {
+  ar: [
+    { id: "agent", badge: "الأكثر طلباً", title: "AI Customer Agent", subtitle: "وكيل ذكاء اصطناعي لخدمة العملاء", desc: "روبوت محادثة ذكي يردّ على عملائكم على مدار الساعة بالعربية والإنجليزية عبر واتساب والموقع وإنستجرام.",
+      cats: [
+        { t: "خدمة عملاء على مدار الساعة", fs: ["ردود فورية بالعربية والإنجليزية مع كشف تلقائي للغة", "قاعدة معرفة ذكية قابلة للتحديث عن منتجاتكم وخدماتكم", "تحويل ذكي للموظف البشري مع حفظ كامل سياق المحادثة"] },
+        { t: "تأهيل ذكي للعملاء المحتملين", fs: ["تأهيل العملاء المحتملين تلقائياً", "حجز مواعيد ومعاينات مباشرة من المحادثة", "استرجاع السلات المتروكة وتأكيد الطلبات عبر واتساب"] },
+        { t: "تحليلات وتقارير مفصّلة", fs: ["تقارير عن أسئلة العملاء وأداء الروبوت", "تخصيص كامل لشخصية الروبوت حسب هوية شركتكم", "يعمل على واتساب وتيليجرام والموقع في آن واحد"] },
+      ] },
+    { id: "auto", title: "AI Workflow Automation", subtitle: "أتمتة العمليات بالذكاء الاصطناعي", desc: "نربط أنظمتكم مع بعضها ونؤتمت المهام اليدوية المتكررة — من المتجر للـ ERP للتقارير.",
+      cats: [
+        { t: "ربط الأنظمة والمزامنة التلقائية", fs: ["مزامنة فورية بين المتجر الإلكتروني ونظام ERP", "إنشاء تلقائي للعملاء وأوامر البيع مع فحص التكرارات", "معالجة ذكية للأخطاء وإعادة المحاولة تلقائياً"] },
+        { t: "إشعارات وتسويق تلقائي", fs: ["إرسال إشعارات تلقائية عبر واتساب والبريد", "متابعة تلقائية للعملاء المحتملين والصفقات", "تقارير أداء يومية وأسبوعية تلقائية"] },
+        { t: "أتمتة متقدمة", fs: ["أتمتة إدارة صفحات التواصل الاجتماعي", "فحص وتصنيف السير الذاتية بالذكاء الاصطناعي", "أتمتة طلبات الأسعار والمتابعات للمورّدين"] },
+      ] },
+    { id: "quality", title: "AI Quality Monitor", subtitle: "تقييم الجودة والتحليلات الذكية", desc: "نظام يراقب مكالمات فريقكم، يقيّمها بالذكاء الاصطناعي، ويوفّر تقارير فورية.",
+      cats: [
+        { t: "تقييم جودة المكالمات", fs: ["تحويل تلقائي للمكالمات العربية إلى نصوص بدقة عالية", "تقييم شامل على أكثر من 50 معياراً في 6 فئات", "ربط تلقائي مع نظام إدارة العملاء"] },
+        { t: "تقارير وتحليلات فورية", fs: ["تقارير تفصيلية تُرسل بالبريد تلقائياً", "نظام حماية ذكي يمنع التقييمات الخاطئة", "لوحة متابعة مع تاريخ كامل لكل تقييم"] },
+      ] },
+  ],
+  en: [
+    { id: "agent", badge: "Most Popular", title: "AI Customer Agent", subtitle: "Intelligent customer service agent", desc: "Smart chatbot responding to your customers 24/7 in Arabic and English via WhatsApp, website, and Instagram.",
+      cats: [
+        { t: "24/7 Customer Service", fs: ["Instant Arabic & English responses with auto detection", "Smart updatable knowledge base about your products", "Intelligent human handoff with full context"] },
+        { t: "Smart Lead Qualification", fs: ["Automatic lead qualification and scoring", "Direct appointment booking from conversation", "Cart recovery and order confirmation via WhatsApp"] },
+        { t: "Analytics & Reports", fs: ["Reports on customer questions and bot performance", "Fully customizable bot personality for your brand", "Works on WhatsApp, Telegram & website simultaneously"] },
+      ] },
+    { id: "auto", title: "AI Workflow Automation", subtitle: "AI-powered process automation", desc: "We connect your systems and automate repetitive manual tasks — from store to ERP to reports.",
+      cats: [
+        { t: "System Integration & Sync", fs: ["Instant sync between online store and ERP", "Auto customer & order creation with duplicate detection", "Smart error handling with automatic retry"] },
+        { t: "Automated Notifications", fs: ["Auto notifications via WhatsApp and email", "Automated lead and deal follow-ups", "Daily and weekly reports sent automatically"] },
+        { t: "Advanced Automation", fs: ["Social media management and auto-replies", "AI-powered CV screening and ranking", "Automated rate requests and supplier follow-ups"] },
+      ] },
+    { id: "quality", title: "AI Quality Monitor", subtitle: "Quality assessment & analytics", desc: "A system that monitors your team's calls, evaluates with AI, and delivers instant reports.",
+      cats: [
+        { t: "Call Quality Assessment", fs: ["Auto Arabic call-to-text with high accuracy", "Evaluation on 50+ criteria across 6 categories", "Automatic CRM matching and integration"] },
+        { t: "Instant Reports & Analytics", fs: ["Detailed reports sent automatically to managers", "Smart safety layer preventing false evaluations", "Full history dashboard for every evaluation"] },
+      ] },
+  ],
+};
+
+const FAQS = {
+  ar: [
+    { q: "كم يستغرق التنفيذ؟", a: "الأنظمة البسيطة أسبوع إلى أسبوعين، والمعقدة من 3 إلى 5 أسابيع." },
+    { q: "هل يدعم اللغة العربية بلهجاتها؟", a: "نعم. الفصحى والمصرية والسعودية والخليجية والإنجليزية." },
+    { q: "ماذا لو حدثت مشكلة بعد التسليم؟", a: "صيانة ودعم شهري. أي مشكلة تُحَل خلال 4 إلى 24 ساعة." },
+    { q: "لسنا متخصصين في التقنية؟", a: "نحن نتولى الجانب التقني بالكامل. أنتم ترون النتائج فقط." },
+    { q: "هل تعملون خارج مصر؟", a: "نعم. مصر والسعودية والإمارات والكويت وأوروبا." },
+  ],
+  en: [
+    { q: "How long does implementation take?", a: "Simple: 1-2 weeks. Complex: 3-5 weeks." },
+    { q: "Does it support Arabic dialects?", a: "Yes. MSA, Egyptian, Saudi, Gulf, and English." },
+    { q: "What if something breaks?", a: "Monthly support. Issues resolved in 4-24 hours." },
+    { q: "We're not technical?", a: "We handle everything. You just see results." },
+    { q: "Do you work outside Egypt?", a: "Yes. Egypt, Saudi, UAE, Kuwait, Europe." },
+  ],
+};
+
+/* ═══ ANIMATED DOTS BACKGROUND ═══ */
+function FloatingDots({ theme }) {
+  const canvasRef = useRef(null);
+  const dots = useMemo(() => Array.from({ length: 40 }, () => ({
+    x: Math.random() * 100, y: Math.random() * 100,
+    r: Math.random() * 2.5 + 1, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15,
+    o: Math.random() * 0.5 + 0.2,
+  })), []);
+
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    let raf;
+    const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const draw = () => {
+      ctx.clearRect(0, 0, c.width, c.height);
+      const color = theme === "dark" ? "138,180,248" : "26,115,232";
+      dots.forEach(d => {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > 100) d.vx *= -1;
+        if (d.y < 0 || d.y > 100) d.vy *= -1;
+        const px = (d.x / 100) * c.width;
+        const py = (d.y / 100) * c.height;
+        ctx.beginPath();
+        ctx.arc(px, py, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${color},${d.o * (theme === "dark" ? 0.3 : 0.2)})`;
+        ctx.fill();
+      });
+      // lines between close dots
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = ((dots[i].x - dots[j].x) / 100) * c.width;
+          const dy = ((dots[i].y - dots[j].y) / 100) * c.height;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo((dots[i].x / 100) * c.width, (dots[i].y / 100) * c.height);
+            ctx.lineTo((dots[j].x / 100) * c.width, (dots[j].y / 100) * c.height);
+            ctx.strokeStyle = `rgba(${color},${(1 - dist / 150) * (theme === "dark" ? 0.08 : 0.05)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, [theme, dots]);
+
+  return <canvas ref={canvasRef} style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} />;
 }
-const gl = { background: "var(--glass)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--glass-b)", borderRadius: "var(--r)" };
 
-/* ── Animated Workflow Visualization ── */
-function WorkflowAnim() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  const nodes = [
-    { x: 60, y: 80, label: "Trigger", icon: "⚡", color: "#F59E0B" },
-    { x: 220, y: 40, label: "AI Process", icon: "🧠", color: "#8B5CF6" },
-    { x: 220, y: 120, label: "Data Fetch", icon: "📦", color: "#3B82F6" },
-    { x: 390, y: 80, label: "Transform", icon: "⚙️", color: "#10B981" },
-    { x: 540, y: 40, label: "CRM Save", icon: "💾", color: "#EF4444" },
-    { x: 540, y: 120, label: "Notify", icon: "📧", color: "#F97316" },
-  ];
-  const paths = [[0,1],[0,2],[1,3],[2,3],[3,4],[3,5]];
-
+/* ═══ FAQ ═══ */
+function FaqItem({ f, th, isRTL, ff }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div ref={ref} style={{ width: "100%", maxWidth: 620, margin: "0 auto", padding: "20px 0" }}>
-      <svg viewBox="0 0 620 170" style={{ width: "100%", height: "auto" }}>
-        <defs>
-          <filter id="glow"><feGaussianBlur stdDeviation="3" result="g" /><feMerge><feMergeNode in="g" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-        </defs>
-        {/* Animated connection lines */}
-        {paths.map(([a, b], i) => {
-          const n1 = nodes[a], n2 = nodes[b];
-          const d = `M${n1.x + 35},${n1.y + 20} C${(n1.x + n2.x) / 2 + 35},${n1.y + 20} ${(n1.x + n2.x) / 2 + 35},${n2.y + 20} ${n2.x + 35},${n2.y + 20}`;
-          return (
-            <g key={i}>
-              <path d={d} fill="none" stroke="var(--glass-b)" strokeWidth="2" />
-              {inView && (
-                <motion.path d={d} fill="none" stroke="url(#lineGrad)" strokeWidth="2" strokeDasharray="8 4"
-                  initial={{ strokeDashoffset: 100 }} animate={{ strokeDashoffset: 0 }}
-                  transition={{ duration: 2, delay: i * 0.3 + 0.5, repeat: Infinity, ease: "linear" }} />
-              )}
-            </g>
-          );
-        })}
-        <defs>
-          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="var(--accent2)" stopOpacity="0.8" />
-          </linearGradient>
-        </defs>
-        {/* Nodes */}
-        {nodes.map((n, i) => (
-          <motion.g key={i} initial={{ opacity: 0, scale: 0.5 }} animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.4, delay: i * 0.15 + 0.3, ease: [0.16, 1, 0.3, 1] }}>
-            <rect x={n.x} y={n.y} width="70" height="40" rx="10" fill="var(--glass)" stroke={n.color + "60"} strokeWidth="1.5" filter="url(#glow)" />
-            <text x={n.x + 18} y={n.y + 24} fontSize="16">{n.icon}</text>
-            <text x={n.x + 36} y={n.y + 26} fontSize="8" fill="var(--text2)" fontFamily="system-ui" textAnchor="start" fontWeight="600">{n.label.length > 6 ? "" : n.label}</text>
-            <text x={n.x + 35} y={n.y + 56} fontSize="9" fill="var(--muted)" fontFamily="system-ui" textAnchor="middle" fontWeight="500">{n.label}</text>
-          </motion.g>
-        ))}
-      </svg>
+    <div style={{ borderBottom: `1px solid ${th.faqBorder}` }}>
+      <button onClick={() => setOpen(!open)} style={{ width: "100%", padding: "18px 0", border: "none", background: "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: ff, textAlign: isRTL ? "right" : "left" }}>
+        <span style={{ fontSize: 15, fontWeight: 500, color: th.text }}>{f.q}</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill={th.accent} style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s", flexShrink: 0, margin: isRTL ? "0 16px 0 0" : "0 0 0 16px" }}><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div style={{ maxHeight: open ? 200 : 0, overflow: "hidden", transition: "max-height 0.4s ease" }}>
+        <div style={{ paddingBottom: 18, fontSize: 14, color: th.textSub, lineHeight: 1.8 }}>{f.a}</div>
+      </div>
     </div>
   );
 }
 
-/* ── Project Card ── */
-function ProjectCard({ p, i, onClick }) {
+/* ═══ SERVICE CARD ═══ */
+function Card({ s, th, isRTL, ff }) {
+  const [exp, setExp] = useState(false);
   return (
-    <Reveal delay={i * 0.04}>
-      <motion.div onClick={() => onClick(p)} whileHover={{ y: -5, boxShadow: "0 12px 40px rgba(0,0,0,.15)" }}
-        transition={{ duration: 0.2 }}
-        style={{ ...gl, padding: 22, cursor: "pointer", position: "relative", overflow: "hidden", height: "100%" }}>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${p.color}, transparent)` }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-          <span style={{ fontSize: 28 }}>{p.emoji}</span>
-          <span style={{ fontSize: 10, color: p.color, background: p.color + "14", padding: "3px 10px", borderRadius: 12, fontWeight: 600 }}>{p.cat}</span>
-        </div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{p.title}</h3>
-        <p style={{ fontSize: 11, color: "var(--muted)", fontWeight: 500, marginBottom: 10 }}>{p.client} · {p.year}</p>
-        <p style={{ fontSize: 12.5, color: "var(--text2)", lineHeight: 1.65, marginBottom: 14 }}>
-          {p.desc.length > 130 ? p.desc.slice(0, 130) + "…" : p.desc}
-        </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: (p.demo || p.repo || p.workflow) ? 12 : 0 }}>
-          {p.tags.slice(0, 4).map(t => <span key={t} style={{ fontSize: 9.5, color: "var(--muted)", background: "var(--surface)", padding: "3px 7px", borderRadius: 5, fontWeight: 500 }}>{t}</span>)}
-          {p.tags.length > 4 && <span style={{ fontSize: 9, color: "var(--muted)" }}>+{p.tags.length - 4}</span>}
-        </div>
-        {(p.demo || p.repo || p.workflow) && (
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {p.demo && <span onClick={e => { e.stopPropagation(); window.open(p.demo, "_blank") }}
-              style={{ fontSize: 10, color: "#FFF", background: p.color, padding: "4px 10px", borderRadius: 6, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}><Play size={10} /> Try It</span>}
-            {p.repo && <span onClick={e => { e.stopPropagation(); window.open(p.repo, "_blank") }}
-              style={{ fontSize: 10, color: "var(--text2)", background: "var(--surface)", padding: "4px 10px", borderRadius: 6, fontWeight: 600, cursor: "pointer" }}>Repo ↗</span>}
-            {p.workflow && <span onClick={e => { e.stopPropagation(); window.open(p.workflow, "_blank") }}
-              style={{ fontSize: 10, color: "var(--text2)", background: "var(--surface)", padding: "4px 10px", borderRadius: 6, fontWeight: 600, cursor: "pointer" }}>Workflow ↗</span>}
-          </div>
-        )}
-      </motion.div>
-    </Reveal>
-  );
-}
-
-/* ── Skill bar ── */
-function SkillBar({ name, level, delay }) {
-  const ref = useRef(null);
-  const v = useInView(ref, { once: true });
-  return (
-    <motion.div ref={ref} initial={{ opacity: 0 }} animate={v ? { opacity: 1 } : {}} transition={{ delay }}
-      style={{ ...gl, padding: "12px 14px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 600 }}>{name}</span>
-        <span style={{ fontSize: 10.5, color: "var(--muted)" }}>{level}%</span>
+    <div style={{ background: th.card, borderRadius: 16, border: `1px solid ${th.cardBorder}`, overflow: "hidden", flex: "1 1 300px", maxWidth: 400, minWidth: 280, transition: "border-color 0.3s, box-shadow 0.3s, transform 0.3s", position: "relative", zIndex: 1 }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = th.cardHoverBorder; e.currentTarget.style.boxShadow = `0 0 30px ${th.accent}12`; e.currentTarget.style.transform = "translateY(-4px)"; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = th.cardBorder; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}>
+      {s.badge && <div style={{ position: "absolute", top: 16, [isRTL ? "left" : "right"]: 16, background: th.accentLight, color: th.accent, padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, fontFamily: ff }}>{s.badge}</div>}
+      <div style={{ padding: "32px 24px 20px" }}>
+        <h3 style={{ fontSize: 22, fontWeight: 600, color: th.text, marginBottom: 4 }}>{s.title}</h3>
+        <p style={{ fontSize: 14, color: th.accent, fontWeight: 500, marginBottom: 14 }}>{s.subtitle}</p>
+        <p style={{ fontSize: 14, color: th.textSub, lineHeight: 1.7, marginBottom: 24 }}>{s.desc}</p>
+        <a href={CAL} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "13px 24px", borderRadius: 28, background: th.accent, color: th.accentText, textDecoration: "none", fontWeight: 600, fontSize: 14, fontFamily: ff, transition: "background 0.2s", marginBottom: 10 }}
+          onMouseEnter={e => e.currentTarget.style.background = th.accentHover} onMouseLeave={e => e.currentTarget.style.background = th.accent}>
+          {isRTL ? "احجز عرضاً تجريبياً" : "Book a Demo"}</a>
+        <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "11px 24px", borderRadius: 28, background: "transparent", color: th.accent, textDecoration: "none", border: `1px solid ${th.btnOutline}`, fontWeight: 600, fontSize: 13, fontFamily: ff, transition: "background 0.2s" }}
+          onMouseEnter={e => e.currentTarget.style.background = th.accentLight} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+          {isRTL ? "تواصل عبر واتساب" : "Chat on WhatsApp"}</a>
       </div>
-      <div style={{ height: 4, background: "var(--surface)", borderRadius: 2, overflow: "hidden" }}>
-        <motion.div initial={{ width: 0 }} animate={v ? { width: level + "%" } : {}}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: delay + 0.2 }}
-          style={{ height: "100%", borderRadius: 2, background: "linear-gradient(90deg, var(--accent), var(--accent2))" }} />
-      </div>
-    </motion.div>
-  );
-}
-
-/* ── Modal ── */
-function Modal({ p, onClose }) {
-  if (!p) return null;
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <motion.div initial={{ opacity: 0, y: 20, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20 }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} onClick={e => e.stopPropagation()}
-        style={{ background: "var(--bg2)", border: "1px solid var(--glass-b)", borderRadius: 20, maxWidth: 600, width: "100%", maxHeight: "82vh", overflow: "auto", padding: "28px 24px", position: "relative" }}>
-        <button onClick={onClose} style={{ position: "absolute", top: 12, right: 12, background: "var(--glass)", border: "1px solid var(--glass-b)", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted)" }}><X size={15} /></button>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${p.color}, transparent)`, borderRadius: "20px 20px 0 0" }} />
-        <span style={{ fontSize: 38, display: "block", marginBottom: 8 }}>{p.emoji}</span>
-        <span style={{ fontSize: 10, color: p.color, background: p.color + "14", padding: "3px 11px", borderRadius: 12, fontWeight: 600 }}>{p.cat}</span>
-        <h2 style={{ fontSize: 22, fontWeight: 800, margin: "8px 0 4px" }}>{p.title}</h2>
-        <p style={{ fontSize: 11, color: "var(--muted)", fontWeight: 500, marginBottom: 14 }}>{p.client} · {p.year}</p>
-        {(p.demo || p.repo || p.workflow) && (
-          <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
-            {p.demo && <a href={p.demo} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 12, color: "#FFF", background: p.color, padding: "8px 16px", borderRadius: 9, fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}><Play size={14} /> Live Demo</a>}
-            {p.repo && <a href={p.repo} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 12, color: "var(--text2)", background: "var(--glass)", padding: "8px 16px", borderRadius: 9, fontWeight: 600, border: "1px solid var(--glass-b)" }}>Repo ↗</a>}
-            {p.workflow && <a href={p.workflow} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 12, color: "var(--text2)", background: "var(--glass)", padding: "8px 16px", borderRadius: 9, fontWeight: 600, border: "1px solid var(--glass-b)" }}>Workflow ↗</a>}
+      <div style={{ borderTop: `1px solid ${th.cardBorder}`, padding: "16px 24px 8px" }}>
+        <p style={{ fontSize: 13, color: th.textSub, marginBottom: 14 }}>{isRTL ? "يشمل:" : "Includes:"}</p>
+        {s.cats.map((c, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <div style={{ width: 20, height: 20, borderRadius: "50%", background: th.accentLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill={th.accent}><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 500, color: th.text }}>{c.t}</span>
           </div>
-        )}
-        <p style={{ fontSize: 13.5, color: "var(--text2)", lineHeight: 1.75, marginBottom: 18 }}>{p.desc}</p>
-        <p style={{ fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1.3, fontWeight: 700, marginBottom: 8 }}>Metrics</p>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {Object.entries(p.metrics).map(([k, v]) => (
-            <div key={k} style={{ ...gl, padding: "10px 14px", flex: 1, minWidth: 90 }}>
-              <div style={{ fontSize: 17, fontWeight: 800, color: p.color }}>{v}</div>
-              <div style={{ fontSize: 9.5, color: "var(--muted)", marginTop: 2 }}>{k}</div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/* ── MAIN APP ── */
-export default function App() {
-  const [dark, setDark] = useState(true);
-  const [cat, setCat] = useState(0);
-  const [sel, setSel] = useState(null);
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", h, { passive: true });
-    return () => window.removeEventListener("scroll", h);
-  }, []);
-  useEffect(() => { document.body.className = dark ? "" : "light"; }, [dark]);
-
-  const filtered = cat === 0 ? PROJECTS : PROJECTS.filter(p => p.cat === CATEGORIES[cat]);
-  const go = id => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
-
-  const navLinks = ["projects", "skills", "experience", "contact"];
-
-  return (
-    <>
-      {/* ── NAV ── */}
-      <motion.nav initial={{ y: -60 }} animate={{ y: 0 }} transition={{ duration: 0.5 }}
-        style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "12px 20px",
-          display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all .3s",
-          ...(scrolled ? { background: dark ? "rgba(11,14,20,.9)" : "rgba(247,248,250,.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--glass-b)" } : {}) }}>
-        <div style={{ fontWeight: 800, fontSize: 17 }}>
-          eyad<span style={{ color: "var(--accent)" }}>.</span><span style={{ color: "var(--muted)" }}>dev</span>
-        </div>
-        {/* Desktop nav */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }} className="desk-nav">
-          {navLinks.map(s => (
-            <span key={s} onClick={() => go(s)} style={{ fontSize: 13, color: "var(--text2)", cursor: "pointer", padding: "6px 10px", borderRadius: 8, fontWeight: 500 }}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}</span>
-          ))}
-          <button onClick={() => setDark(!dark)} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid var(--glass-b)", background: "var(--glass)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text2)" }}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          <a href="https://wa.me/201210280648" target="_blank" rel="noopener noreferrer">
-            <button style={{ background: "var(--accent)", color: "#FFF", fontWeight: 700, fontSize: 12, padding: "7px 16px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: "inherit" }}>Let's Talk</button>
-          </a>
-        </div>
-        {/* Mobile hamburger */}
-        <div style={{ display: "none" }} className="mob-nav">
-          <button onClick={() => setDark(!dark)} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid var(--glass-b)", background: "var(--glass)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text2)", marginRight: 6 }}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ width: 34, height: 34, borderRadius: 9, border: "1px solid var(--glass-b)", background: "var(--glass)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text2)" }}>
-            {menuOpen ? <X size={16} /> : <Menu size={16} />}
-          </button>
-        </div>
-      </motion.nav>
-
-      {/* Mobile menu overlay */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            style={{ position: "fixed", top: 58, left: 0, right: 0, zIndex: 99, background: dark ? "rgba(11,14,20,.95)" : "rgba(247,248,250,.95)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--glass-b)", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4 }}>
-            {navLinks.map(s => (
-              <span key={s} onClick={() => go(s)} style={{ fontSize: 15, color: "var(--text)", padding: "10px 0", cursor: "pointer", fontWeight: 600, borderBottom: "1px solid var(--glass-b)" }}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}</span>
-            ))}
-            <a href="https://wa.me/201210280648" target="_blank" rel="noopener noreferrer" style={{ marginTop: 8 }}>
-              <button style={{ background: "var(--accent)", color: "#FFF", fontWeight: 700, fontSize: 14, padding: "10px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", width: "100%" }}>Let's Talk</button>
-            </a>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── HERO ── */}
-      <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "90px 20px 50px", position: "relative" }}>
-        <div style={{ position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)", width: 500, height: 500, background: `radial-gradient(circle, ${dark ? "rgba(52,211,153,.05)" : "rgba(5,150,105,.04)"} 0%, transparent 70%)`, pointerEvents: "none" }} />
-        <div style={{ maxWidth: 680, position: "relative", zIndex: 1 }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--glow)", border: `1px solid ${dark ? "rgba(52,211,153,.2)" : "rgba(5,150,105,.15)"}`, borderRadius: 18, padding: "4px 13px", marginBottom: 22 }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)" }} />
-              <span style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600 }}>Botpress Certified Partner</span>
-            </div>
-          </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.08 }}
-            style={{ fontSize: "clamp(32px, 6vw, 62px)", fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1.05, marginBottom: 14 }}>
-            Eyad <span style={{ background: "linear-gradient(135deg, var(--accent), var(--accent2))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Sofian</span>
-          </motion.h1>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.16 }}
-            style={{ fontSize: "clamp(14px, 1.6vw, 18px)", color: "var(--text2)", fontWeight: 500, marginBottom: 8 }}>
-            AI Product & Technology Specialist
-          </motion.p>
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.24 }}
-            style={{ fontSize: "clamp(12px, 1.1vw, 14px)", color: "var(--muted)", lineHeight: 1.7, maxWidth: 500, margin: "0 auto 14px" }}>
-            I build production chatbots, automation workflows, LLM fine-tuning pipelines, and system integrations — serving clients across Egypt, Saudi Arabia, and the Gulf.
-          </motion.p>
-
-          {/* Animated workflow */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.6 }}>
-            <WorkflowAnim />
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}
-            style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => go("projects")} style={{ background: "var(--accent)", color: "#FFF", padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit" }}>View Projects</button>
-            {[["GitHub", "https://github.com/EyadSofian", Github], ["LinkedIn", "https://www.linkedin.com/in/eyad-sofian-16b753238", Linkedin]].map(([l, u, Icon]) => (
-              <a key={l} href={u} target="_blank" rel="noopener noreferrer" style={{ ...gl, padding: "8px 18px", display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "var(--text2)" }}><Icon size={13} /> {l}</a>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── STATS ── */}
-      <div style={{ maxWidth: 1020, margin: "0 auto", padding: "0 20px 60px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
-        {[["🚀", "15+", "Projects"], ["⚡", "22", "n8n Workflows"], ["🤖", "8+", "Bots Live"], ["🤝", "10+", "Clients"], ["🧠", "3+", "LLMs Trained"]].map(([icon, val, label], i) => (
-          <Reveal key={i} delay={i * 0.06}>
-            <motion.div whileHover={{ y: -3 }} style={{ ...gl, padding: 18, textAlign: "center" }}>
-              <div style={{ fontSize: 22, marginBottom: 4 }}>{icon}</div>
-              <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.5px" }}>{val}</div>
-              <div style={{ fontSize: 10, color: "var(--muted)", fontWeight: 500, marginTop: 2 }}>{label}</div>
-            </motion.div>
-          </Reveal>
         ))}
       </div>
-
-      {/* ── PROJECTS ── */}
-      <section id="projects" style={{ maxWidth: 1020, margin: "0 auto", padding: "60px 20px" }}>
-        <Reveal>
-          <p style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>Portfolio</p>
-          <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px" }}>Featured Projects</h2>
-          <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 4, marginBottom: 24 }}>Real production systems — not demos.</p>
-        </Reveal>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 24, overflowX: "auto", paddingBottom: 4 }}>
-          {CATEGORIES.map((c, i) => (
-            <motion.button key={c} whileTap={{ scale: 0.95 }} onClick={() => setCat(i)}
-              style={{ ...gl, padding: "6px 14px", borderRadius: 18, cursor: "pointer", fontSize: 11, fontWeight: 600,
-                fontFamily: "inherit", color: cat === i ? "#FFF" : "var(--text2)", whiteSpace: "nowrap",
-                background: cat === i ? "var(--accent)" : "var(--glass)",
-                borderColor: cat === i ? "var(--accent)" : "var(--glass-b)" }}>{c}</motion.button>
-          ))}
-        </div>
-        <AnimatePresence mode="wait">
-          <motion.div key={cat} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-            {filtered.map((p, i) => <ProjectCard key={p.id} p={p} i={i} onClick={setSel} />)}
-          </motion.div>
-        </AnimatePresence>
-      </section>
-
-      {/* ── SKILLS (with new categories) ── */}
-      <section id="skills" style={{ maxWidth: 1020, margin: "0 auto", padding: "60px 20px" }}>
-        <Reveal>
-          <p style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>Tech Stack</p>
-          <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 24 }}>Tools & Technologies</h2>
-        </Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8 }}>
-          {[...SKILLS,
-            ["LLM Fine-tuning (QLoRA)", 75], ["Arabic NLP / Dialect", 85], ["Prompt Engineering", 90], ["Hugging Face", 75], ["Make / Zapier", 70]
-          ].map(([n, l], i) => <SkillBar key={n} name={n} level={l} delay={i * 0.025} />)}
-        </div>
-      </section>
-
-      {/* ── EXPERIENCE ── */}
-      <section id="experience" style={{ maxWidth: 1020, margin: "0 auto", padding: "60px 20px" }}>
-        <Reveal>
-          <p style={{ fontSize: 11, color: "#F87171", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>Career</p>
-          <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 24 }}>Experience</h2>
-        </Reveal>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {EXPERIENCE.map((e, i) => (
-            <Reveal key={i} delay={i * 0.06}>
-              <div style={{ display: "flex", gap: 16 }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                  <motion.div animate={e.current ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                    style={{ width: 10, height: 10, borderRadius: "50%", background: e.current ? "var(--accent)" : "var(--glass-b)", border: e.current ? "none" : "2px solid var(--glass-b)" }} />
-                  {i < EXPERIENCE.length - 1 && <div style={{ width: 1, background: "var(--glass-b)", flex: 1, minHeight: 50 }} />}
-                </div>
-                <div style={{ paddingBottom: 22 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{e.role}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--muted)", fontWeight: 500 }}>
-                    <span style={{ color: "var(--accent)", fontWeight: 600 }}>{e.co}</span> · {e.period}
+      <div style={{ borderTop: `1px solid ${th.cardBorder}` }}>
+        {exp && (
+          <div style={{ padding: "16px 24px" }}>
+            {s.cats.map((c, ci) => (
+              <div key={ci} style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: th.accent, marginBottom: 8 }}>{c.t}</div>
+                {c.fs.map((f, fi) => (
+                  <div key={fi} style={{ display: "flex", gap: 8, marginBottom: 6, paddingRight: isRTL ? 8 : 0, paddingLeft: isRTL ? 0 : 8 }}>
+                    <span style={{ color: th.accent, fontSize: 11, marginTop: 4, flexShrink: 0 }}>+</span>
+                    <span style={{ fontSize: 13, color: th.textSub, lineHeight: 1.6 }}>{f}</span>
                   </div>
-                  <span style={{ fontSize: 9.5, color: "var(--muted)", background: "var(--glass)", padding: "2px 7px", borderRadius: 4, fontWeight: 500, display: "inline-block", marginTop: 3, border: "1px solid var(--glass-b)" }}>{e.type}</span>
-                </div>
+                ))}
               </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CERTS ── */}
-      <div style={{ maxWidth: 1020, margin: "0 auto", padding: "0 20px 60px" }}>
-        <Reveal>
-          <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Certifications</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {CERTS.map((c, i) => (
-              <motion.div key={i} whileHover={{ y: -2 }}
-                style={{ background: c.color + "0A", border: `1px solid ${c.color}20`, borderRadius: 11, padding: "10px 16px", display: "flex", alignItems: "center", gap: 7 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 11.5, color: "var(--text2)", fontWeight: 500 }}>{c.name}</span>
-                {c.link && <a href={c.link} target="_blank" rel="noopener noreferrer" style={{ color: c.color, display: "flex" }}><ExternalLink size={11} /></a>}
-              </motion.div>
             ))}
           </div>
-        </Reveal>
+        )}
+        <button onClick={() => setExp(!exp)} style={{ width: "100%", padding: "14px", border: "none", background: "transparent", color: th.accent, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: ff, borderTop: exp ? `1px solid ${th.cardBorder}` : "none" }}>
+          {exp ? (isRTL ? "إخفاء التفاصيل" : "Hide features") : (isRTL ? "عرض تفاصيل الخدمة" : "View plan features")}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill={th.accent} style={{ display: "inline-block", verticalAlign: "middle", transform: exp ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.3s", margin: isRTL ? "0 6px 0 0" : "0 0 0 6px" }}><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
       </div>
+    </div>
+  );
+}
 
-      {/* ── CONTACT ── */}
-      <section id="contact" style={{ maxWidth: 620, margin: "0 auto", padding: "60px 20px 80px", textAlign: "center" }}>
-        <Reveal>
-          <p style={{ fontSize: 11, color: "#FBBF24", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 5 }}>Get in Touch</p>
-          <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 10 }}>Let's Build Something</h2>
-          <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 26, lineHeight: 1.6 }}>
-            Open to AI automation, chatbot development, LLM fine-tuning, and system integration projects.
-          </p>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="https://wa.me/201210280648" target="_blank" rel="noopener noreferrer">
-              <motion.button whileHover={{ y: -2 }} style={{ background: "#25D366", color: "#FFF", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5 }}>
-                <MessageCircle size={15} /> WhatsApp
-              </motion.button>
-            </a>
-            <a href="mailto:eyadsofian862@gmail.com" style={{ ...gl, padding: "10px 22px", display: "flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 600, color: "var(--text2)" }}><Mail size={15} /> Email</a>
+/* ═══ MAIN ═══ */
+export default function App() {
+  const [lang, setLang] = useState("ar");
+  const [mode, setMode] = useState("light");
+  const [heroVis, setHeroVis] = useState(false);
+  const isRTL = lang === "ar";
+  const ff = isRTL ? "'Tajawal', sans-serif" : "'Segoe UI', system-ui, sans-serif";
+  const th = mode === "dark" ? DARK : LIGHT;
+
+  useEffect(() => { setTimeout(() => setHeroVis(true), 100); }, []);
+  useEffect(() => {
+    const s = document.createElement("style");
+    s.textContent = `@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}::selection{background:rgba(26,115,232,0.2)}
+    .ht{opacity:0;transform:translateY(30px);transition:all 0.9s cubic-bezier(0.16,1,0.3,1)}.ht.v{opacity:1;transform:translateY(0)}.ht2{transition-delay:.12s}.ht3{transition-delay:.24s}.ht4{transition-delay:.4s}`;
+    document.head.appendChild(s);
+    return () => document.head.removeChild(s);
+  }, []);
+  useEffect(() => { document.body.style.background = th.bg; }, [th.bg]);
+
+  const t = isRTL ? { l1: "ارتقِ بأعمالك مع", brand: "Engosoft AI", sub: "ثلاث خدمات ذكية تعمل على مدار الساعة — لتوفير الوقت وزيادة المبيعات وتحسين تجربة عملائكم", cta: "احجز عرضاً تجريبياً مجاناً", faq: "الأسئلة الشائعة", foot: "حلول تقنية متكاملة — من الفكرة إلى التنفيذ", demo: "احجز عرضاً" }
+    : { l1: "Power your business with", brand: "Engosoft AI", sub: "Three intelligent services working 24/7 — to save time, increase sales, and improve customer experience", cta: "Book a free demo", faq: "Frequently Asked Questions", foot: "Full-Service Tech Solutions — From Idea to Execution", demo: "Book Demo" };
+
+  return (
+    <div dir={isRTL ? "rtl" : "ltr"} style={{ fontFamily: ff, color: th.text, minHeight: "100vh", background: th.bg, transition: "background 0.4s, color 0.4s" }}>
+      <FloatingDots theme={mode} />
+
+      {/* NAV */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: th.nav, backdropFilter: "blur(20px)", borderBottom: `1px solid ${th.navBorder}`, padding: "0 32px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 0.4s" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg, ${th.accent}, #4285f4)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 11 }}>ES</div>
+          <span style={{ fontWeight: 700, fontSize: 18, color: th.text }}>Engosoft</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Dark mode toggle */}
+          <button onClick={() => setMode(mode === "light" ? "dark" : "light")} style={{ background: "none", border: `1px solid ${th.btnOutline}`, borderRadius: 20, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.background = th.accentLight} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+            {mode === "light"
+              ? <svg width="18" height="18" viewBox="0 0 24 24" fill={th.textSub}><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+              : <svg width="18" height="18" viewBox="0 0 24 24" fill={th.textSub}><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>}
+          </button>
+          <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} style={{ background: "none", border: `1px solid ${th.btnOutline}`, borderRadius: 20, padding: "6px 16px", fontSize: 13, fontWeight: 500, color: th.textSub, cursor: "pointer", fontFamily: ff }}>{lang === "ar" ? "English" : "عربي"}</button>
+          <a href={CAL} target="_blank" rel="noopener noreferrer" style={{ background: th.accent, color: th.accentText, padding: "8px 22px", borderRadius: 20, textDecoration: "none", fontSize: 13, fontWeight: 600, fontFamily: ff }}>{t.demo}</a>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section style={{ position: "relative", zIndex: 1, textAlign: "center", padding: "80px 24px 48px", background: th.heroBg, transition: "background 0.4s" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <div className={`ht ${heroVis ? 'v' : ''}`} style={{ marginBottom: 24 }}>
+            <div style={{ width: 44, height: 44, margin: "0 auto", borderRadius: 10, background: `linear-gradient(135deg, ${th.accent}, #4285f4)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14 }}>ES</div>
           </div>
-        </Reveal>
+          <h1 className={`ht ht2 ${heroVis ? 'v' : ''}`} style={{ fontSize: "clamp(32px, 5.5vw, 56px)", fontWeight: 400, lineHeight: 1.25, marginBottom: 8, color: th.text, transition: "color 0.4s" }}>{t.l1}</h1>
+          <h1 className={`ht ht3 ${heroVis ? 'v' : ''}`} style={{ fontSize: "clamp(32px, 5.5vw, 56px)", fontWeight: 500, lineHeight: 1.25, marginBottom: 24, color: th.accent }}>{t.brand}</h1>
+          <p className={`ht ht3 ${heroVis ? 'v' : ''}`} style={{ fontSize: 16, color: th.textSub, maxWidth: 560, margin: "0 auto 32px", lineHeight: 1.8 }}>{t.sub}</p>
+          <div className={`ht ht4 ${heroVis ? 'v' : ''}`}>
+            <a href={CAL} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: th.accent, color: th.accentText, padding: "14px 32px", borderRadius: 28, textDecoration: "none", fontWeight: 600, fontSize: 15, fontFamily: ff, transition: "background 0.2s, transform 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = th.accentHover; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = th.accent; e.currentTarget.style.transform = "translateY(0)"; }}>
+              {t.cta}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill={th.accentText}><path d={isRTL ? "M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" : "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"}/></svg>
+            </a>
+          </div>
+        </div>
       </section>
 
-      <footer style={{ borderTop: "1px solid var(--glass-b)", padding: "16px 20px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <span style={{ fontSize: 10.5, color: "var(--muted)" }}>© 2026 Eyad Sofian · Cairo, Egypt</span>
-        <span style={{ fontSize: 10.5, color: "var(--muted)" }}>React + Framer Motion</span>
+      <div style={{ height: 1, background: th.navBorder, position: "relative", zIndex: 1 }} />
+
+      {/* CARDS */}
+      <section style={{ padding: "48px 24px 72px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", maxWidth: 1280, margin: "0 auto", alignItems: "flex-start" }}>
+          {SVC[lang].map(s => <Card key={s.id} s={s} th={th} isRTL={isRTL} ff={ff} />)}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ padding: "48px 24px 64px", borderTop: `1px solid ${th.navBorder}`, position: "relative", zIndex: 1 }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 400, textAlign: "center", marginBottom: 36, color: th.text }}>{t.faq}</h2>
+          {FAQS[lang].map((f, i) => <FaqItem key={i} f={f} th={th} isRTL={isRTL} ff={ff} />)}
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ padding: "28px 24px", borderTop: `1px solid ${th.navBorder}`, textAlign: "center", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ width: 22, height: 22, borderRadius: 5, background: `linear-gradient(135deg, ${th.accent}, #4285f4)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 7 }}>ES</div>
+          <span style={{ fontWeight: 700, fontSize: 14, color: th.text }}>Engosoft</span>
+        </div>
+        <p style={{ fontSize: 12, color: th.textSub }}>{t.foot}</p>
+        <p style={{ fontSize: 11, color: th.btnOutline, marginTop: 4 }}>© 2025 Engosoft</p>
       </footer>
 
-      <AnimatePresence>{sel && <Modal p={sel} onClose={() => setSel(null)} />}</AnimatePresence>
-
-      {/* Mobile responsive CSS */}
-      <style>{`
-        @media(min-width:769px){.mob-nav{display:none!important}}
-        @media(max-width:768px){.desk-nav{display:none!important}.mob-nav{display:flex!important}}
-      `}</style>
-    </>
+      {/* WA Float */}
+      <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener noreferrer" style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, width: 52, height: 52, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 16px rgba(37,211,102,0.35)", textDecoration: "none", transition: "transform 0.2s" }}
+        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      </a>
+    </div>
   );
 }
