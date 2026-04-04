@@ -30,8 +30,49 @@ const SVC={ar:[
   {id:"c",title:"AI Quality Monitor",sub:"Quality analytics",desc:"Monitor calls, evaluate with AI.",cats:[{t:"Call Quality Assessment"},{t:"Instant Auto Reports"}]},
 ]};
 
-const FAQS={ar:[{q:"كم يستغرق التنفيذ؟",a:"أسبوع لأسبوعين للبسيط، 3-5 أسابيع للمعقد."},{q:"يدعم العربية بلهجاتها؟",a:"فصحى ومصرية وسعودية وخليجية وإنجليزية."},{q:"مشكلة بعد التسليم؟",a:"دعم شهري. تُحَل في 4-24 ساعة."},{q:"خارج مصر؟",a:"مصر والسعودية والإمارات والكويت وأوروبا."}],
-en:[{q:"Implementation time?",a:"1-2 weeks simple, 3-5 complex."},{q:"Arabic dialects?",a:"MSA, Egyptian, Saudi, Gulf."},{q:"Post-delivery issues?",a:"Monthly support. 4-24h."},{q:"Outside Egypt?",a:"Egypt, Saudi, UAE, Kuwait, Europe."}]};
+const FAQS={ar:[{q:"كم يستغرق التنفيذ؟",a:"أسبوع لأسبوعين للبسيط، 3-5 أسابيع للمعقد. نتفق على جدول واضح."},{q:"هل يتكامل مع أنظمتنا الحالية؟",a:"نعم. نتكامل مع Odoo وShopify وSalla وZid وHubSpot وZoho وYeastar وPBX وأي نظام يدعم API."},{q:"هل يحتاج تثبيت على سيرفراتنا؟",a:"لا. كل شيء سحابي ومُدار بالكامل من طرفنا. لا تحتاجون لأي بنية تحتية."},{q:"هل يدعم اللغة العربية بلهجاتها؟",a:"نعم. فصحى ومصرية وسعودية وخليجية وإنجليزية — مع كشف تلقائي للغة."},{q:"ماذا لو حدثت مشكلة بعد التسليم؟",a:"دعم وصيانة شهرية مستمرة. أي مشكلة تُحَل في 4-24 ساعة حسب الأولوية."},{q:"هل يمكن ربط واتساب بشكل رسمي؟",a:"نعم. نستخدم WhatsApp Business API الرسمي عبر Meta — رقم موثّق واشتراك رسمي."}],
+en:[{q:"Implementation time?",a:"1-2 weeks simple, 3-5 weeks complex. Clear timeline agreed upfront."},{q:"Does it integrate with our systems?",a:"Yes. Odoo, Shopify, Salla, Zid, HubSpot, Zoho, Yeastar PBX, and any API-enabled system."},{q:"Do we need to install anything?",a:"No. Everything is cloud-hosted and fully managed by us. Zero infrastructure needed."},{q:"Arabic dialect support?",a:"Yes. MSA, Egyptian, Saudi, Gulf dialects, and English — with auto language detection."},{q:"Post-delivery support?",a:"Continuous monthly maintenance. Issues resolved in 4-24 hours by priority."},{q:"Official WhatsApp integration?",a:"Yes. We use official WhatsApp Business API via Meta — verified number and official subscription."}]};
+
+const TOOLS=[{n:"Botpress",src:"/assets/logos/botpress.png"},{n:"n8n",src:"/assets/logos/n8n.png"},{n:"Odoo",src:"/assets/logos/odoo.png"},{n:"Meta",src:"/assets/logos/meta.png"},{n:"OpenAI",src:"/assets/logos/openai.png"},{n:"Chatwoot",src:"/assets/logos/chatwoot.png"},{n:"Yeastar",src:"/assets/logos/yeastar.png"},{n:"Zapier",src:"/assets/logos/zapier.png"},{n:"Make",src:"/assets/logos/make.png"}];
+
+const CLIENTS={ar:[
+  {logo:"/assets/logos/elbakri.png",name:"El-Bakri Overseas",text:"فريق Engosoft ساعدنا في أتمتة طلبات الأسعار اليومية لأكثر من 250 فندقاً — وفّرنا أكثر من 90% من وقت الموظفين.",role:"إدارة العمليات"},
+  {logo:"/assets/logos/terynova.png",name:"Terynova",text:"البوت الذكي على متجرنا في Shopify يردّ على العملاء فوراً ويتابع الطلبات تلقائياً — تجربة ممتازة.",role:"التجارة الإلكترونية"},
+  {logo:"/assets/logos/xqpharma.png",name:"XQ Pharma",text:"نظام تسجيل المصروفات والإيرادات عبر واتساب سهّل علينا المتابعة المالية بشكل كبير.",role:"الإدارة المالية"},
+],en:[
+  {logo:"/assets/logos/elbakri.png",name:"El-Bakri Overseas",text:"Engosoft automated our daily rate requests to 250+ hotels — saving 90%+ of staff time.",role:"Operations"},
+  {logo:"/assets/logos/terynova.png",name:"Terynova",text:"The smart bot on our Shopify store responds instantly and tracks orders automatically — excellent experience.",role:"E-Commerce"},
+  {logo:"/assets/logos/xqpharma.png",name:"XQ Pharma",text:"The WhatsApp-based expense and revenue tracking system greatly simplified our financial monitoring.",role:"Finance"},
+]};
+
+function ToolsMarquee({th,isRTL}){
+  return(<div style={{overflow:"hidden",padding:"16px 0",position:"relative",zIndex:1,borderTop:`1px solid ${th.navB}`,borderBottom:`1px solid ${th.navB}`}}>
+    <div style={{display:"flex",animation:"marquee 35s linear infinite",width:"max-content",gap:"clamp(24px,4vw,40px)",alignItems:"center",paddingLeft:20,paddingRight:20}}>
+      {[...TOOLS,...TOOLS,...TOOLS].map((t,i)=>(
+        <div key={i} style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,opacity:.55}}>
+          <img src={t.src} alt={t.n} style={{height:"clamp(20px,3vw,30px)",width:"auto",maxWidth:80,objectFit:"contain",filter:th===L?"grayscale(100%) opacity(.6)":"grayscale(100%) brightness(1.8) opacity(.5)"}} loading="lazy"/>
+          <span style={{fontSize:"clamp(10px,1.4vw,12px)",fontWeight:600,color:th.sub,whiteSpace:"nowrap"}}>{t.n}</span>
+        </div>
+      ))}
+    </div>
+  </div>);
+}
+
+function ClientsSection({th,isRTL,ff,lang}){
+  const clients=CLIENTS[lang];const[ref,vis]=useInView(.1);
+  return(<div ref={ref} style={{padding:"clamp(28px,5vw,48px) clamp(12px,3vw,24px)",position:"relative",zIndex:1,borderTop:`1px solid ${th.navB}`}}>
+    <h2 style={{fontSize:"clamp(18px,3.5vw,24px)",fontWeight:400,textAlign:"center",marginBottom:"clamp(20px,3vw,32px)",color:th.text}}>{lang==="ar"?"عملاؤنا يتحدثون":"Our Clients Speak"}</h2>
+    <div style={{display:"flex",gap:"clamp(10px,2vw,16px)",justifyContent:"center",flexWrap:"wrap",maxWidth:1000,margin:"0 auto"}}>
+      {clients.map((c,i)=>(<div key={i} style={{flex:"1 1 240px",maxWidth:320,minWidth:220,background:th.card,borderRadius:14,border:`1px solid ${th.cardB}`,padding:"24px 20px",transition:"all .5s",opacity:vis?1:0,transform:vis?"translateY(0)":"translateY(24px)",transitionDelay:`${i*.15}s`}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+          <img src={c.logo} alt={c.name} style={{width:44,height:44,borderRadius:10,objectFit:"contain",background:th.sec||"#f5f5f5",padding:4}} loading="lazy"/>
+          <div><div style={{fontSize:14,fontWeight:600,color:th.text}}>{c.name}</div><div style={{fontSize:11,color:th.sub}}>{c.role}</div></div>
+        </div>
+        <p style={{fontSize:13,color:th.sub,lineHeight:1.7,fontStyle:"italic"}}>{`"${c.text}"`}</p>
+      </div>))}
+    </div>
+  </div>);
+}
 
 function useInView(t=.1){const r=useRef();const[v,setV]=useState(false);useEffect(()=>{const o=new IntersectionObserver(([e])=>{if(e.isIntersecting)setV(true)},{threshold:t});if(r.current)o.observe(r.current);return()=>o.disconnect()},[t]);return[r,v];}
 
@@ -130,18 +171,20 @@ export default function App(){
   const[lang,setLang]=useState("ar");const[mode,setMode]=useState("light");const[hv,setHv]=useState(false);
   const isRTL=lang==="ar",ff=isRTL?"'Tajawal',sans-serif":"'Segoe UI',system-ui,sans-serif",th=mode==="dark"?D:L;
   useEffect(()=>{setTimeout(()=>setHv(true),150)},[]);
-  useEffect(()=>{const s=document.createElement("style");s.textContent=`@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{overflow-x:hidden}::selection{background:rgba(26,115,232,.2)}.ht{opacity:0;transform:translateY(20px);transition:all .7s cubic-bezier(.16,1,.3,1)}.ht.v{opacity:1;transform:translateY(0)}.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.35s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}`;document.head.appendChild(s);return()=>document.head.removeChild(s)},[]);
+  useEffect(()=>{const s=document.createElement("style");s.textContent=`@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{overflow-x:hidden}::selection{background:rgba(26,115,232,.2)}.ht{opacity:0;transform:translateY(20px);transition:all .7s cubic-bezier(.16,1,.3,1)}.ht.v{opacity:1;transform:translateY(0)}.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.35s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-33.33%)}}`;document.head.appendChild(s);return()=>document.head.removeChild(s)},[]);
   useEffect(()=>{document.body.style.background=th.bg},[th.bg]);
   const t=isRTL?{l1:"ارتقِ بأعمالك مع",brand:"Engosoft AI",sub:"ثلاث خدمات ذكية تعمل على مدار الساعة — لتوفير الوقت وزيادة المبيعات وتحسين تجربة عملائكم",cta:"احجز استشارة مجانية",faq:"الأسئلة الشائعة",foot:"حلول تقنية متكاملة — من الفكرة إلى التنفيذ",demo:"استشارة",show:"ماذا نبني لعملائنا",plans:"اختر الخدمة المناسبة"}:{l1:"Power your business with",brand:"Engosoft AI",sub:"Three AI services working 24/7 — save time, increase sales, improve experience",cta:"Book Free Consultation",faq:"FAQ",foot:"Full-Service AI Solutions",demo:"Consult",show:"What we build",plans:"Choose your service"};
 
   return(<div dir={isRTL?"rtl":"ltr"} style={{fontFamily:ff,color:th.text,minHeight:"100vh",background:th.bg,transition:"background .4s,color .4s",overflowX:"hidden",width:"100%"}}>
   <Dots mode={mode}/>
-  <nav style={{position:"sticky",top:0,zIndex:100,background:th.nav,backdropFilter:"blur(16px)",borderBottom:`1px solid ${th.navB}`,padding:"0 clamp(10px,3vw,28px)",height:50,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-    <div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:24,height:24,borderRadius:5,background:`linear-gradient(135deg,${th.acc},#4285f4)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:8}}>ES</div><span style={{fontWeight:700,fontSize:14,color:th.text}}>Engosoft</span></div>
-    <div style={{display:"flex",alignItems:"center",gap:6}}>
-      <button onClick={()=>setMode(mode==="light"?"dark":"light")} style={{background:"none",border:`1px solid ${th.btn}`,borderRadius:14,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>{mode==="light"?<svg width="13" height="13" viewBox="0 0 24 24" fill={th.sub}><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>:<svg width="13" height="13" viewBox="0 0 24 24" fill={th.sub}><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>}</button>
-      <button onClick={()=>setLang(lang==="ar"?"en":"ar")} style={{background:"none",border:`1px solid ${th.btn}`,borderRadius:14,padding:"4px 10px",fontSize:11,color:th.sub,cursor:"pointer",fontFamily:ff}}>{lang==="ar"?"EN":"ع"}</button>
-      <a href={CAL} target="_blank" rel="noopener noreferrer" style={{background:th.acc,color:th.accT,padding:"5px 14px",borderRadius:14,textDecoration:"none",fontSize:11,fontWeight:600,fontFamily:ff}}>{t.demo}</a></div></nav>
+  <nav style={{position:"sticky",top:0,zIndex:100,background:th.nav,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderBottom:`1px solid ${th.navB}`,padding:"0 clamp(8px,2vw,28px)",height:48,display:"flex",alignItems:"center",justifyContent:"space-between",transition:"background .4s"}}>
+    <div style={{display:"flex",alignItems:"center",gap:5,minWidth:0}}>
+      <div style={{width:24,height:24,borderRadius:5,background:`linear-gradient(135deg,${th.acc},#4285f4)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:8,flexShrink:0}}>ES</div>
+      <span style={{fontWeight:700,fontSize:13,color:th.text,whiteSpace:"nowrap"}}>Engosoft</span></div>
+    <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+      <button onClick={()=>setMode(mode==="light"?"dark":"light")} style={{background:"none",border:`1px solid ${th.btn}`,borderRadius:12,width:26,height:26,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>{mode==="light"?<svg width="12" height="12" viewBox="0 0 24 24" fill={th.sub}><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>:<svg width="12" height="12" viewBox="0 0 24 24" fill={th.sub}><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>}</button>
+      <button onClick={()=>setLang(lang==="ar"?"en":"ar")} style={{background:"none",border:`1px solid ${th.btn}`,borderRadius:12,padding:"3px 8px",fontSize:10,color:th.sub,cursor:"pointer",fontFamily:ff,flexShrink:0}}>{lang==="ar"?"EN":"ع"}</button>
+      <a href={CAL} target="_blank" rel="noopener noreferrer" style={{background:th.acc,color:th.accT,padding:"4px 12px",borderRadius:12,textDecoration:"none",fontSize:10,fontWeight:600,fontFamily:ff,whiteSpace:"nowrap",flexShrink:0}}>{t.demo}</a></div></nav>
 
   <section style={{position:"relative",zIndex:1,overflow:"hidden",background:th.hero}}>
     <div style={{position:"relative",width:"100%",minHeight:"clamp(240px,42vh,400px)",overflow:"hidden"}}>
@@ -153,6 +196,9 @@ export default function App(){
         <p className={`ht d2 ${hv?'v':''}`} style={{fontSize:"clamp(12px,1.6vw,14px)",color:th.sub,maxWidth:460,margin:"0 auto clamp(12px,2vw,20px)",lineHeight:1.8}}>{t.sub}</p>
         <div className={`ht d3 ${hv?'v':''}`}><a href={CAL} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:th.acc,color:th.accT,padding:"clamp(8px,1.5vw,12px) clamp(16px,3vw,24px)",borderRadius:24,textDecoration:"none",fontWeight:600,fontSize:"clamp(11px,1.6vw,14px)",fontFamily:ff}}>{t.cta}<svg width="14" height="14" viewBox="0 0 24 24" fill={th.accT}><path d={isRTL?"M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z":"M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"}/></svg></a></div></div></div></section>
 
+  {/* TOOLS MARQUEE */}
+  <ToolsMarquee th={th} isRTL={isRTL}/>
+
   <section style={{position:"relative",zIndex:1,borderTop:`1px solid ${th.navB}`}}>
     <h2 style={{fontSize:"clamp(18px,3.5vw,24px)",fontWeight:400,textAlign:"center",padding:"clamp(24px,4vw,40px) 12px 0",color:th.text}}>{t.show}</h2>
     {SHOW[lang].map((item,i)=>(<div key={i} style={{background:i%2===0?"transparent":th.sec,transition:"background .4s"}}><ShowItem item={item} idx={i} th={th} isRTL={isRTL} ff={ff}/></div>))}</section>
@@ -160,6 +206,9 @@ export default function App(){
   <section style={{padding:"clamp(24px,4vw,40px) clamp(10px,2vw,18px) clamp(36px,5vw,56px)",position:"relative",zIndex:1,borderTop:`1px solid ${th.navB}`}}>
     <h2 style={{fontSize:"clamp(18px,3.5vw,24px)",fontWeight:400,textAlign:"center",marginBottom:"clamp(18px,3vw,28px)",color:th.text}}>{t.plans}</h2>
     <div style={{display:"flex",gap:"clamp(8px,1.5vw,14px)",justifyContent:"center",flexWrap:"wrap",maxWidth:1140,margin:"0 auto"}}>{SVC[lang].map(s=><Card key={s.id} s={s} th={th} isRTL={isRTL} ff={ff}/>)}</div></section>
+
+  {/* CLIENTS */}
+  <ClientsSection th={th} isRTL={isRTL} ff={ff} lang={lang}/>
 
   <section style={{padding:"clamp(24px,4vw,40px) clamp(10px,2vw,18px) clamp(32px,4vw,48px)",borderTop:`1px solid ${th.navB}`,position:"relative",zIndex:1}}>
     <div style={{maxWidth:600,margin:"0 auto"}}><h2 style={{fontSize:"clamp(18px,3.5vw,24px)",fontWeight:400,textAlign:"center",marginBottom:20,color:th.text}}>{t.faq}</h2>{FAQS[lang].map((f,i)=><FaqItem key={i} f={f} th={th} isRTL={isRTL} ff={ff}/>)}</div></section>
