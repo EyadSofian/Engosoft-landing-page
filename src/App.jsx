@@ -196,9 +196,6 @@ export default function App(){
         <p className={`ht d2 ${hv?'v':''}`} style={{fontSize:"clamp(12px,1.6vw,14px)",color:th.sub,maxWidth:460,margin:"0 auto clamp(12px,2vw,20px)",lineHeight:1.8}}>{t.sub}</p>
         <div className={`ht d3 ${hv?'v':''}`}><a href={CAL} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:th.acc,color:th.accT,padding:"clamp(8px,1.5vw,12px) clamp(16px,3vw,24px)",borderRadius:24,textDecoration:"none",fontWeight:600,fontSize:"clamp(11px,1.6vw,14px)",fontFamily:ff}}>{t.cta}<svg width="14" height="14" viewBox="0 0 24 24" fill={th.accT}><path d={isRTL?"M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z":"M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"}/></svg></a></div></div></div></section>
 
-  {/* TOOLS MARQUEE */}
-  <ToolsMarquee th={th} isRTL={isRTL}/>
-
   <section style={{position:"relative",zIndex:1,borderTop:`1px solid ${th.navB}`}}>
     <h2 style={{fontSize:"clamp(18px,3.5vw,24px)",fontWeight:400,textAlign:"center",padding:"clamp(24px,4vw,40px) 12px 0",color:th.text}}>{t.show}</h2>
     {SHOW[lang].map((item,i)=>(<div key={i} style={{background:i%2===0?"transparent":th.sec,transition:"background .4s"}}><ShowItem item={item} idx={i} th={th} isRTL={isRTL} ff={ff}/></div>))}</section>
